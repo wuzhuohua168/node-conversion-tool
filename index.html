@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>订阅转换器</title>
+<title>Clash 一键生成完整配置</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;700;800&display=swap');
 
@@ -39,18 +39,10 @@
     width:44px; height:44px; border-radius:10px; flex-shrink:0;
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
     display:flex; align-items:center; justify-content:center;
-    font-family:var(--mono); font-weight:700; color:#0c1016; font-size:13px;
+    font-family:var(--mono); font-weight:700; color:#0c1016; font-size:12px;
   }
   h1{font-size:20px; margin:0 0 2px; letter-spacing:-0.01em; font-weight:800;}
   .sub{color:var(--text-dim); font-size:13px; margin:0; font-family:var(--mono);}
-  .protoline{
-    font-family:var(--mono); font-size:12px; color:var(--text-dim);
-    display:flex; gap:6px; flex-wrap:wrap; align-items:center;
-  }
-  .tag{
-    border:1px solid var(--line); border-radius:6px; padding:3px 8px;
-    background:var(--bg-panel);
-  }
 
   .panel{
     background:var(--bg-panel); border:1px solid var(--line); border-radius:14px;
@@ -78,16 +70,16 @@
   .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;}
   button{
     font-family:var(--sans); font-weight:700; font-size:13px; cursor:pointer;
-    border-radius:8px; padding:9px 16px; border:1px solid var(--line); background:var(--bg-panel-2);
+    border-radius:8px; padding:10px 18px; border:1px solid var(--line); background:var(--bg-panel-2);
     color:var(--text); transition:.15s;
   }
   button:hover{border-color:var(--accent-2); color:#fff;}
   button.primary{
     background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0c1016; border:none;
+    padding:12px 22px; font-size:14px;
   }
   button.primary:hover{filter:brightness(1.08);}
   button.ghost{background:transparent;}
-  button:disabled{opacity:.4; cursor:not-allowed;}
 
   .stats{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
   .stat{
@@ -99,7 +91,7 @@
   .stat.ok .v{color:var(--ok);}
   .stat.err .v{color:var(--err);}
 
-  .errlist{margin-top:12px; display:flex; flex-direction:column; gap:6px; max-height:220px; overflow:auto;}
+  .errlist{margin-top:12px; display:flex; flex-direction:column; gap:6px; max-height:180px; overflow:auto;}
   .errline{
     font-family:var(--mono); font-size:12px; background:#1c1216; border:1px solid #3a2228;
     border-radius:8px; padding:8px 12px; color:#ffb4b4;
@@ -107,21 +99,13 @@
   .errline b{color:var(--err); font-weight:700;}
   .errline .snippet{color:#8a7076; display:block; margin-top:3px; word-break:break-all;}
 
-  .tabs{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
-  .tab{
-    font-family:var(--mono); font-size:12px; padding:8px 14px; border-radius:8px;
-    border:1px solid var(--line); background:var(--bg-panel-2); color:var(--text-dim); cursor:pointer;
-  }
-  .tab.active{border-color:var(--accent); color:var(--accent); background:#132420;}
-
-  .nodelist{display:flex; flex-direction:column; gap:6px; margin-top:14px;}
+  .nodelist{display:flex; flex-direction:column; gap:6px; margin-top:14px; max-height:260px; overflow:auto;}
   .node{
     display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px;
     background:var(--bg-panel-2); border:1px solid var(--line); border-radius:8px; padding:8px 12px;
   }
   .node .badge{
-    font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; text-transform:uppercase;
-    flex-shrink:0;
+    font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; text-transform:uppercase; flex-shrink:0;
   }
   .badge.ss{background:#1e2a3a; color:#7fb8ff;}
   .badge.vmess{background:#2a1e3a; color:#c39bff;}
@@ -129,12 +113,24 @@
   .badge.trojan{background:#3a1e1e; color:#ff9b9b;}
   .badge.hysteria2{background:#3a2e1e; color:#ffcf7f;}
   .badge.tuic{background:#1e343a; color:#7fe0ff;}
+  .badge.ssr{background:#291e3a; color:#b39bff;}
   .node .nm{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .node .addr{color:var(--text-dim); flex-shrink:0;}
 
-  footer{margin-top:8px; color:var(--text-dim); font-size:12px; line-height:1.7; font-family:var(--mono);}
+  .resultbox{
+    display:none; text-align:center; padding:32px 20px; border:1px dashed var(--accent-2);
+    border-radius:14px; background:#101826;
+  }
+  .resultbox.show{display:block;}
+  .resultbox .big{font-family:var(--mono); font-size:15px; color:var(--accent); margin-bottom:14px;}
+  .infobox{
+    margin-top:14px; font-family:var(--mono); font-size:11.5px; color:var(--text-dim);
+    text-align:left; background:var(--bg-panel-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    line-height:1.7;
+  }
+
+  footer{margin-top:8px; color:var(--text-dim); font-size:12px; line-height:1.8; font-family:var(--mono);}
   footer b{color:var(--text);}
-  .copied-flash{color:var(--accent); font-size:12px; font-family:var(--mono);}
 </style>
 </head>
 <body>
@@ -142,34 +138,29 @@
 
   <header>
     <div class="brand">
-      <div class="mark">SUB</div>
+      <div class="mark">ALL<br>IN1</div>
       <div>
-        <h1>订阅转换器</h1>
-        <p class="sub">粘贴订阅内容 → 本地解析 → 生成 Clash / 通用 Base64 / Surge</p>
+        <h1>一键生成完整 Clash 配置</h1>
+        <p class="sub">粘贴订阅内容 → 自动解析节点 + 内嵌分流规则 → 直接导入即可用，无需手动改任何字段</p>
       </div>
-    </div>
-    <div class="protoline">
-      支持协议：
-      <span class="tag">ss</span><span class="tag">ssr</span><span class="tag">vmess</span>
-      <span class="tag">vless</span><span class="tag">trojan</span><span class="tag">hysteria2</span><span class="tag">tuic</span>
     </div>
   </header>
 
   <div class="panel">
-    <h2><span class="n">1</span>输入订阅内容</h2>
-    <textarea id="input" placeholder="粘贴内容，支持三种格式：
-1) 一行一个节点链接，例如：ss://... 、vmess://... 、trojan://...
-2) 整段 Base64（比如从订阅链接下载下来的原始内容）
-3) 直接把订阅 URL 粘贴进来也可以尝试自动识别（若浏览器跨域限制导致无法读取，请改为手动下载后粘贴内容）"></textarea>
+    <h2><span class="n">1</span>粘贴你的订阅内容</h2>
+    <textarea id="input" placeholder="粘贴内容，支持：
+1) 一行一个节点链接（ss:// vmess:// vless:// trojan:// hysteria2:// tuic:// ssr://）
+2) 整段 Base64（从订阅链接下载下来的原始内容）
+注意：不要直接粘贴“订阅链接 URL”本身，浏览器脚本通常因跨域限制读不到内容——请先在浏览器打开订阅链接把返回内容复制出来，再粘贴到这里。"></textarea>
     <div class="row">
-      <button class="primary" id="parseBtn">解析并转换</button>
+      <button class="primary" id="genBtn">生成完整配置</button>
       <button class="ghost" id="clearBtn">清空</button>
       <button class="ghost" id="sampleBtn">填入示例</button>
     </div>
   </div>
 
   <div class="panel" id="statsPanel" style="display:none;">
-    <h2><span class="n">2</span>解析结果</h2>
+    <h2><span class="n">2</span>节点解析结果</h2>
     <div class="stats">
       <div class="stat"><div class="v" id="statTotal">0</div><div class="l">总行数</div></div>
       <div class="stat ok"><div class="v" id="statOk">0</div><div class="l">成功解析</div></div>
@@ -179,25 +170,20 @@
     <div class="nodelist" id="nodeList"></div>
   </div>
 
-  <div class="panel" id="outputPanel" style="display:none;">
-    <h2><span class="n">3</span>转换输出</h2>
-    <div class="tabs">
-      <div class="tab active" data-fmt="clash">Clash (YAML)</div>
-      <div class="tab" data-fmt="base64">通用 Base64 订阅</div>
-      <div class="tab" data-fmt="surge">Surge</div>
-    </div>
-    <textarea id="output" readonly style="min-height:280px;"></textarea>
-    <div class="row">
-      <button class="primary" id="copyBtn">复制</button>
-      <button class="ghost" id="downloadBtn">下载文件</button>
-      <span class="copied-flash" id="copiedFlash" style="display:none;">已复制 ✓</span>
+  <div class="panel" id="resultPanel" style="display:none;">
+    <h2><span class="n">3</span>下载完整配置</h2>
+    <div class="resultbox" id="resultBox">
+      <div class="big" id="resultSummary"></div>
+      <button class="primary" id="downloadBtn">下载 clash-完整配置.yaml</button>
+      <div class="infobox">
+        分流规则已经内嵌好了（国内服务直连、国外服务走代理、GEOIP,CN 兜底直连，共 37 组规则集），节点也已经直接写进 proxies 里 —— 这个文件下载后<b>不需要再改任何占位符</b>，在 Clash Verge 里新建订阅 → 本地 → 选这个文件 → 启用即可生效。
+      </div>
     </div>
   </div>
 
   <footer>
-    说明：所有解析和转换都在你的浏览器本地完成，不会把订阅内容发送到任何服务器。<br>
-    如果之前的转换总是失败，最常见的原因是：<b>直接粘贴了订阅链接（URL）而不是订阅内容</b>——很多订阅链接需要携带特定请求头或有跨域限制，
-    浏览器脚本经常无法直接读取。建议先在浏览器新标签页打开订阅链接（或用 curl/客户端自带的更新功能）把返回内容复制出来，再粘贴到这里。
+    所有解析和生成都在你的浏览器本地完成，订阅内容不会发送到任何服务器。<br>
+    规则集来源：blackmatrix7/ios_rule_script（Clash 格式），逐条校验可访问；GEOIP 使用 Clash 内置数据库判断中国大陆 IP 直连。
   </footer>
 
 </div>
@@ -205,19 +191,16 @@
 <script>
 (function(){
   const $ = (id) => document.getElementById(id);
-  const inputEl = $('input'), outputEl = $('output');
+  const inputEl = $('input');
   let parsedNodes = [];
-  let currentFmt = 'clash';
+  window.__lastRawLines = [];
 
   // ---------- base64 helpers ----------
   function b64decode(str){
     str = str.trim().replace(/-/g,'+').replace(/_/g,'/');
     while (str.length % 4) str += '=';
-    try {
-      return decodeURIComponent(escape(atob(str)));
-    } catch(e){
-      return atob(str);
-    }
+    try { return decodeURIComponent(escape(atob(str))); }
+    catch(e){ return atob(str); }
   }
   function b64encode(str){
     try { return btoa(unescape(encodeURIComponent(str))); }
@@ -230,7 +213,6 @@
     return false;
   }
 
-  // ---------- generic URI splitter ----------
   function splitUri(rest){
     let name = '';
     const hashIdx = rest.indexOf('#');
@@ -258,7 +240,6 @@
     return { auth, server, port, params, name };
   }
 
-  // ---------- per-protocol parsers ----------
   function parseSS(uri){
     let rest = uri.slice(5);
     let name = '';
@@ -267,9 +248,8 @@
       try { name = decodeURIComponent(rest.slice(hashIdx+1)); } catch(e){ name = rest.slice(hashIdx+1); }
       rest = rest.slice(0, hashIdx);
     }
-    let query = '';
     const qIdx = rest.indexOf('?');
-    if (qIdx >= 0){ query = rest.slice(qIdx+1); rest = rest.slice(0, qIdx); }
+    if (qIdx >= 0){ rest = rest.slice(0, qIdx); }
     const atIdx = rest.lastIndexOf('@');
     let method, password, server, port;
     if (atIdx >= 0){
@@ -328,18 +308,11 @@
     catch(e){ throw new Error('VMess Base64 解码或 JSON 解析失败：' + e.message); }
     if (!json.add || !json.port) throw new Error('VMess JSON 缺少 add/port 字段');
     return {
-      type:'vmess',
-      name: json.ps || (json.add+':'+json.port),
-      server: json.add,
-      port: parseInt(json.port, 10),
-      uuid: json.id,
-      alterId: parseInt(json.aid || 0, 10),
-      network: json.net || 'tcp',
+      type:'vmess', name: json.ps || (json.add+':'+json.port),
+      server: json.add, port: parseInt(json.port, 10), uuid: json.id,
+      alterId: parseInt(json.aid || 0, 10), network: json.net || 'tcp',
       tls: json.tls === 'tls' || json.tls === true,
-      sni: json.sni || json.host || '',
-      wsPath: json.path || '',
-      wsHost: json.host || '',
-      headerType: json.type || 'none'
+      sni: json.sni || json.host || '', wsPath: json.path || '', wsHost: json.host || ''
     };
   }
 
@@ -347,15 +320,11 @@
     const { auth, server, port, params, name } = splitUri(uri.slice(8));
     if (!auth) throw new Error('VLESS 节点缺少 UUID');
     return {
-      type:'vless', name: name || (server+':'+port),
-      server, port, uuid: auth,
+      type:'vless', name: name || (server+':'+port), server, port, uuid: auth,
       network: params.type || 'tcp',
       tls: params.security === 'tls' || params.security === 'reality',
-      security: params.security || '',
-      sni: params.sni || '',
-      flow: params.flow || '',
-      wsPath: params.path || '',
-      wsHost: params.host || '',
+      security: params.security || '', sni: params.sni || '', flow: params.flow || '',
+      wsPath: params.path || '', wsHost: params.host || '',
       pbk: params.pbk || '', sid: params.sid || ''
     };
   }
@@ -364,12 +333,10 @@
     const { auth, server, port, params, name } = splitUri(uri.slice(9));
     if (!auth) throw new Error('Trojan 节点缺少密码');
     return {
-      type:'trojan', name: name || (server+':'+port),
-      server, port, password: auth,
+      type:'trojan', name: name || (server+':'+port), server, port, password: auth,
       sni: params.sni || params.peer || '',
       allowInsecure: params.allowInsecure === '1' || params.insecure === '1',
-      network: params.type || 'tcp',
-      wsPath: params.path || '', wsHost: params.host || ''
+      network: params.type || 'tcp', wsPath: params.path || '', wsHost: params.host || ''
     };
   }
 
@@ -377,10 +344,8 @@
     const { auth, server, port, params, name } = splitUri(uri.slice(prefixLen));
     if (!auth) throw new Error('Hysteria2 节点缺少密码');
     return {
-      type:'hysteria2', name: name || (server+':'+port),
-      server, port, password: auth,
-      sni: params.sni || '',
-      insecure: params.insecure === '1'
+      type:'hysteria2', name: name || (server+':'+port), server, port, password: auth,
+      sni: params.sni || '', insecure: params.insecure === '1'
     };
   }
 
@@ -389,11 +354,9 @@
     const sep = auth.indexOf(':');
     if (sep < 0) throw new Error('TUIC 节点需要 uuid:password 格式');
     return {
-      type:'tuic', name: name || (server+':'+port),
-      server, port,
+      type:'tuic', name: name || (server+':'+port), server, port,
       uuid: auth.slice(0, sep), password: auth.slice(sep+1),
-      sni: params.sni || '',
-      alpn: params.alpn || ''
+      sni: params.sni || '', alpn: params.alpn || ''
     };
   }
 
@@ -411,33 +374,26 @@
     throw new Error('未识别的协议前缀（仅支持 ss/ssr/vmess/vless/trojan/hysteria2/tuic）');
   }
 
-  // ---------- expand raw input into lines ----------
   function expandInput(raw){
     raw = raw.trim();
     const protoPrefixes = ['ss://','ssr://','vmess://','vless://','trojan://','hysteria2://','hy2://','tuic://'];
     const hasDirectProto = protoPrefixes.some(p => raw.includes(p));
     let lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-
-    // If it's one big base64 blob (no direct protocol lines visible), decode first.
     if (!hasDirectProto && looksLikeBase64Blob(raw)){
       try {
         const decoded = b64decode(raw);
         lines = decoded.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      } catch(e){ /* fall through, keep original lines */ }
-    } else {
-      // mixed: some lines might individually be base64-wrapped single entries — keep as is,
-      // but also handle case of a single line that's a big base64 blob with no newlines
-      if (lines.length === 1 && !protoPrefixes.some(p => lines[0].startsWith(p)) && looksLikeBase64Blob(lines[0])){
-        try {
-          const decoded = b64decode(lines[0]);
-          lines = decoded.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-        } catch(e){}
-      }
+      } catch(e){}
+    } else if (lines.length === 1 && !protoPrefixes.some(p => lines[0].startsWith(p)) && looksLikeBase64Blob(lines[0])){
+      try {
+        const decoded = b64decode(lines[0]);
+        lines = decoded.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      } catch(e){}
     }
     return lines;
   }
 
-  // ---------- YAML (Clash) generation ----------
+  // ---------- YAML generation ----------
   function yamlStr(v){
     if (v === undefined || v === null || v === '') return '""';
     const s = String(v);
@@ -521,63 +477,113 @@
     return lines.join('\n');
   }
 
-  function buildClashYaml(nodes){
-    if (!nodes.length) return '# 没有可用节点';
-    const names = nodes.map(n => yamlStr(n.name)).join(', ');
-    let out = 'proxies:\n';
+  // ---------- baked-in rule set (validated against blackmatrix7/ios_rule_script Clash yaml files) ----------
+  const RULE_ENTRIES = [
+    ["AppleNews", "PROXY"],
+    ["Apple", "DIRECT"],
+    ["BiliBili", "DIRECT"],
+    ["NetEaseMusic", "DIRECT"],
+    ["Baidu", "DIRECT"],
+    ["DouBan", "DIRECT"],
+    ["WeChat", "DIRECT"],
+    ["DouYin", "DIRECT"],
+    ["Sina", "DIRECT"],
+    ["Zhihu", "DIRECT"],
+    ["XiaoHongShu", "DIRECT"],
+    ["YouTube", "PROXY"],
+    ["Netflix", "PROXY"],
+    ["Disney", "PROXY"],
+    ["HBO", "PROXY"],
+    ["Spotify", "PROXY"],
+    ["Telegram", "PROXY"],
+    ["PayPal", "PROXY"],
+    ["Twitter", "PROXY"],
+    ["Facebook", "PROXY"],
+    ["Amazon", "PROXY"],
+    ["OpenAI", "PROXY"],
+    ["Sony", "DIRECT"],
+    ["Nintendo", "DIRECT"],
+    ["Epic", "DIRECT"],
+    ["SteamCN", "DIRECT"],
+    ["Steam", "DIRECT"],
+    ["Game", "DIRECT"],
+    ["GitHub", "PROXY"],
+    ["Microsoft", "DIRECT"],
+    ["Google", "PROXY"],
+    ["TikTok", "PROXY"],
+    ["TVB", "PROXY"],
+    ["Speedtest", "PROXY"],
+    ["Global", "PROXY"],
+    ["China", "DIRECT"],
+    ["Lan", "DIRECT"]
+  ];
+  const RULE_BASE = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash";
+
+  function dedupeNames(nodes){
+    const seen = {};
+    return nodes.map(n => {
+      const base = n.name;
+      if (!(base in seen)){ seen[base] = 1; return n; }
+      seen[base] += 1;
+      return Object.assign({}, n, { name: `${base} #${seen[base]}` });
+    });
+  }
+
+  function buildFullConfig(rawNodes){
+    const nodes = dedupeNames(rawNodes);
+    const names = nodes.map(n => yamlStr(n.name));
+    let out = '';
+    out += '# ------------------------------------------------------------------\n';
+    out += '# Clash / Mihomo 完整配置 —— 节点 + 分流规则已合并，可直接导入使用\n';
+    out += '# 分流规则参考小火箭配置整理：国内服务直连，国外主流服务走代理，GEOIP,CN 兜底直连\n';
+    out += '# ------------------------------------------------------------------\n\n';
+    out += 'mixed-port: 7890\n';
+    out += 'allow-lan: false\n';
+    out += 'mode: rule\n';
+    out += 'log-level: info\n';
+    out += 'ipv6: false\n\n';
+    out += 'dns:\n';
+    out += '  enable: true\n';
+    out += '  ipv6: false\n';
+    out += "  default-nameserver: [223.5.5.5, 119.29.29.29]\n";
+    out += "  nameserver: ['https://doh.pub/dns-query', 'https://dns.alidns.com/dns-query']\n";
+    out += '  fallback: [8.8.8.8, 1.1.1.1]\n\n';
+
+    out += 'proxies:\n';
     out += nodes.map(nodeToClash).join('\n') + '\n\n';
+
     out += 'proxy-groups:\n';
-    out += '  - name: 节点选择\n';
+    out += '  - name: PROXY\n';
     out += '    type: select\n';
-    out += `    proxies: [${names}]\n\n`;
+    out += `    proxies: [${names.join(', ')}]\n`;
+    out += '  - name: 自动选择\n';
+    out += '    type: url-test\n';
+    out += `    proxies: [${names.join(', ')}]\n`;
+    out += '    url: http://www.gstatic.com/generate_204\n';
+    out += '    interval: 300\n\n';
+
+    out += 'rule-providers:\n';
+    RULE_ENTRIES.forEach(([rname]) => {
+      out += `  ${rname}:\n`;
+      out += `    type: http\n`;
+      out += `    behavior: classical\n`;
+      out += `    url: "${RULE_BASE}/${rname}/${rname}.yaml"\n`;
+      out += `    path: ./rule-providers/${rname}.yaml\n`;
+      out += `    interval: 86400\n`;
+    });
+    out += '\n';
+
     out += 'rules:\n';
-    out += '  - MATCH,节点选择\n';
-    return out;
-  }
+    RULE_ENTRIES.forEach(([rname, policy]) => {
+      out += `  - RULE-SET,${rname},${policy}\n`;
+    });
+    out += '  - GEOIP,CN,DIRECT\n';
+    out += '  - MATCH,PROXY\n';
 
-  // ---------- Base64 universal subscription ----------
-  function buildBase64Sub(lines){
-    return b64encode(lines.join('\n'));
-  }
-
-  // ---------- Surge ----------
-  function nodeToSurge(n){
-    if (n.type === 'ss'){
-      return `${n.name} = ss, ${n.server}, ${n.port}, encrypt-method=${n.method}, password=${n.password}`;
-    }
-    if (n.type === 'vmess'){
-      let s = `${n.name} = vmess, ${n.server}, ${n.port}, username=${n.uuid}`;
-      if (n.tls) s += ', tls=true';
-      if (n.network === 'ws'){
-        s += `, ws=true, ws-path=${n.wsPath || '/'}`;
-        if (n.wsHost) s += `, ws-headers=Host:${n.wsHost}`;
-      }
-      return s;
-    }
-    if (n.type === 'trojan'){
-      let s = `${n.name} = trojan, ${n.server}, ${n.port}, password=${n.password}`;
-      if (n.sni) s += `, sni=${n.sni}`;
-      if (n.allowInsecure) s += ', skip-cert-verify=true';
-      return s;
-    }
-    return `# 跳过（Surge 暂不支持该协议 ${n.type}）: ${n.name}`;
-  }
-
-  function buildSurge(nodes){
-    if (!nodes.length) return '# 没有可用节点';
-    let out = '[Proxy]\n';
-    out += nodes.map(nodeToSurge).join('\n') + '\n\n';
-    const proxyable = nodes.filter(n => ['ss','vmess','trojan'].includes(n.type));
-    out += '[Proxy Group]\n';
-    out += `节点选择 = select, ${proxyable.map(n=>n.name).join(', ')}\n\n`;
-    out += '[Rule]\n';
-    out += 'FINAL, 节点选择\n';
     return out;
   }
 
   // ---------- UI wiring ----------
-  const badgeClass = (t) => t in {ss:1,vmess:1,vless:1,trojan:1,hysteria2:1,tuic:1} ? t : 'ss';
-
   function render(nodes, errors, total){
     $('statsPanel').style.display = 'block';
     $('statTotal').textContent = total;
@@ -603,20 +609,18 @@
       nodeList.appendChild(div);
     });
 
-    $('outputPanel').style.display = nodes.length ? 'block' : 'none';
-    updateOutput();
+    $('resultPanel').style.display = nodes.length ? 'block' : 'none';
+    if (nodes.length){
+      $('resultBox').classList.add('show');
+      $('resultSummary').textContent = `已生成完整配置：${nodes.length} 个节点 + 37 组分流规则`;
+    } else {
+      $('resultBox').classList.remove('show');
+    }
   }
 
-  function updateOutput(){
-    const rawLines = parsedNodes.length ? window.__lastRawLines : [];
-    if (currentFmt === 'clash') outputEl.value = buildClashYaml(parsedNodes);
-    else if (currentFmt === 'base64') outputEl.value = buildBase64Sub(window.__lastRawLines || []);
-    else if (currentFmt === 'surge') outputEl.value = buildSurge(parsedNodes);
-  }
-
-  $('parseBtn').addEventListener('click', () => {
+  $('genBtn').addEventListener('click', () => {
     const raw = inputEl.value;
-    if (!raw.trim()){ return; }
+    if (!raw.trim()) return;
     const lines = expandInput(raw);
     window.__lastRawLines = lines;
     const nodes = [];
@@ -640,44 +644,26 @@
   $('clearBtn').addEventListener('click', () => {
     inputEl.value = '';
     $('statsPanel').style.display = 'none';
-    $('outputPanel').style.display = 'none';
+    $('resultPanel').style.display = 'none';
     parsedNodes = [];
   });
 
   $('sampleBtn').addEventListener('click', () => {
     inputEl.value = [
-      'ss://YWVzLTI1Ni1nY206dGVzdHBhc3M=@example-ss.example.com:8388#SS-示例',
+      'ss://' + b64encode('aes-256-gcm:testpass') + '@example-ss.example.com:8388#SS-示例',
       'vmess://' + b64encode(JSON.stringify({v:'2',ps:'VMess-示例',add:'example-vmess.example.com',port:'443',id:'b831381d-6324-4d53-ad4f-8cda48b30811',aid:'0',net:'ws',type:'none',host:'example-vmess.example.com',path:'/ws',tls:'tls'})),
       'trojan://mypassword@example-trojan.example.com:443?sni=example-trojan.example.com#Trojan-示例',
-      'vless://b831381d-6324-4d53-ad4f-8cda48b30811@example-vless.example.com:443?security=tls&type=ws&path=%2Fws&sni=example-vless.example.com#VLESS-示例',
-      '这不是一个有效的协议行，用来演示错误提示'
+      'vless://b831381d-6324-4d53-ad4f-8cda48b30811@example-vless.example.com:443?security=tls&type=ws&path=%2Fws&sni=example-vless.example.com#VLESS-示例'
     ].join('\n');
   });
 
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentFmt = tab.dataset.fmt;
-      updateOutput();
-    });
-  });
-
-  $('copyBtn').addEventListener('click', () => {
-    outputEl.select();
-    document.execCommand('copy');
-    const flash = $('copiedFlash');
-    flash.style.display = 'inline';
-    setTimeout(() => flash.style.display = 'none', 1200);
-  });
-
   $('downloadBtn').addEventListener('click', () => {
-    const extMap = { clash: 'yaml', base64: 'txt', surge: 'conf' };
-    const blob = new Blob([outputEl.value], {type:'text/plain'});
+    const content = buildFullConfig(parsedNodes);
+    const blob = new Blob([content], {type:'text/plain'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `subscription.${extMap[currentFmt]}`;
+    a.download = 'clash-完整配置.yaml';
     a.click();
     URL.revokeObjectURL(url);
   });
