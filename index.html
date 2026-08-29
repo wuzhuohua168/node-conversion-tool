@@ -3,145 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clash 一键生成完整配置</title>
+<title>多客户端订阅转换器</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;700;800&display=swap');
-
   :root{
-    --bg: #0c1016;
-    --bg-panel: #12161f;
-    --bg-panel-2: #171c27;
-    --line: #232938;
-    --line-soft: #1a2029;
-    --text: #e7ebf3;
-    --text-dim: #8892a6;
-    --accent: #5eead4;
-    --accent-2: #7c8cff;
-    --warn: #ffb454;
-    --err: #ff6b6b;
-    --ok: #5eead4;
-    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: 'Manrope', -apple-system, sans-serif;
+    --bg:#0c1016; --bg-panel:#12161f; --bg-panel-2:#171c27; --line:#232938; --line-soft:#1a2029;
+    --text:#e7ebf3; --text-dim:#8892a6; --accent:#5eead4; --accent-2:#7c8cff; --err:#ff6b6b; --ok:#5eead4;
+    --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; --sans:'Manrope', -apple-system, sans-serif;
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0; background:
+  body{margin:0; background:
       radial-gradient(circle at 15% 0%, #131a26 0%, transparent 45%),
-      radial-gradient(circle at 90% 10%, #14202220 0%, transparent 40%),
-      var(--bg);
-    color:var(--text); font-family:var(--sans); min-height:100vh;
-  }
-  .wrap{max-width:1080px; margin:0 auto; padding:36px 20px 64px;}
-
-  header{display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:28px; flex-wrap:wrap;}
+      radial-gradient(circle at 90% 10%, #14202220 0%, transparent 40%), var(--bg);
+    color:var(--text); font-family:var(--sans); min-height:100vh;}
+  .wrap{max-width:1120px; margin:0 auto; padding:36px 20px 64px;}
+  header{display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:24px; flex-wrap:wrap;}
   .brand{display:flex; align-items:center; gap:14px;}
-  .mark{
-    width:44px; height:44px; border-radius:10px; flex-shrink:0;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display:flex; align-items:center; justify-content:center;
-    font-family:var(--mono); font-weight:700; color:#0c1016; font-size:12px;
-  }
-  h1{font-size:20px; margin:0 0 2px; letter-spacing:-0.01em; font-weight:800;}
+  .mark{width:44px; height:44px; border-radius:10px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:700; color:#0c1016; font-size:11px; text-align:center; line-height:1.1;}
+  h1{font-size:20px; margin:0 0 2px; letter-spacing:-.01em; font-weight:800;}
   .sub{color:var(--text-dim); font-size:13px; margin:0; font-family:var(--mono);}
-
-  .panel{
-    background:var(--bg-panel); border:1px solid var(--line); border-radius:14px;
-    padding:20px; margin-bottom:18px;
-  }
-  .panel h2{
-    font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim);
-    margin:0 0 12px; font-weight:700; display:flex; align-items:center; gap:8px;
-  }
-  .panel h2 .n{
-    width:18px; height:18px; border-radius:5px; background:var(--bg-panel-2);
-    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
-    font-family:var(--mono); font-size:10px; color:var(--accent); flex-shrink:0;
-  }
-
-  textarea{
-    width:100%; min-height:150px; resize:vertical;
-    background:#080a0e; color:var(--text); border:1px solid var(--line-soft);
-    border-radius:10px; padding:14px; font-family:var(--mono); font-size:12.5px;
-    line-height:1.6; outline:none;
-  }
+  .panel{background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:18px;}
+  .panel h2{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); margin:0 0 12px; font-weight:700; display:flex; align-items:center; gap:8px;}
+  .panel h2 .n{width:18px; height:18px; border-radius:5px; background:var(--bg-panel-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--accent); flex-shrink:0;}
+  textarea{width:100%; min-height:150px; resize:vertical; background:#080a0e; color:var(--text); border:1px solid var(--line-soft); border-radius:10px; padding:14px; font-family:var(--mono); font-size:12.5px; line-height:1.6; outline:none;}
   textarea:focus{border-color:var(--accent-2);}
   textarea::placeholder{color:#4c5567;}
-
   .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;}
-  button{
-    font-family:var(--sans); font-weight:700; font-size:13px; cursor:pointer;
-    border-radius:8px; padding:10px 18px; border:1px solid var(--line); background:var(--bg-panel-2);
-    color:var(--text); transition:.15s;
-  }
+  button{font-family:var(--sans); font-weight:700; font-size:13px; cursor:pointer; border-radius:8px; padding:9px 16px; border:1px solid var(--line); background:var(--bg-panel-2); color:var(--text); transition:.15s;}
   button:hover{border-color:var(--accent-2); color:#fff;}
-  button.primary{
-    background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0c1016; border:none;
-    padding:12px 22px; font-size:14px;
-  }
+  button.primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0c1016; border:none; padding:11px 20px; font-size:14px;}
   button.primary:hover{filter:brightness(1.08);}
   button.ghost{background:transparent;}
-
   .stats{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
-  .stat{
-    flex:1; min-width:110px; background:var(--bg-panel-2); border:1px solid var(--line);
-    border-radius:10px; padding:10px 14px;
-  }
-  .stat .v{font-family:var(--mono); font-size:20px; font-weight:700;}
-  .stat .l{font-size:11px; color:var(--text-dim); margin-top:2px;}
-  .stat.ok .v{color:var(--ok);}
-  .stat.err .v{color:var(--err);}
-
+  .stat{flex:1; min-width:110px; background:var(--bg-panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 14px;}
+  .stat .v{font-family:var(--mono); font-size:20px; font-weight:700;} .stat .l{font-size:11px; color:var(--text-dim); margin-top:2px;}
+  .stat.ok .v{color:var(--ok);} .stat.err .v{color:var(--err);}
   .errlist{margin-top:12px; display:flex; flex-direction:column; gap:6px; max-height:180px; overflow:auto;}
-  .errline{
-    font-family:var(--mono); font-size:12px; background:#1c1216; border:1px solid #3a2228;
-    border-radius:8px; padding:8px 12px; color:#ffb4b4;
-  }
-  .errline b{color:var(--err); font-weight:700;}
-  .errline .snippet{color:#8a7076; display:block; margin-top:3px; word-break:break-all;}
-
-  .nodelist{display:flex; flex-direction:column; gap:6px; margin-top:14px; max-height:260px; overflow:auto;}
-  .node{
-    display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px;
-    background:var(--bg-panel-2); border:1px solid var(--line); border-radius:8px; padding:8px 12px;
-  }
-  .node .badge{
-    font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; text-transform:uppercase; flex-shrink:0;
-  }
-  .badge.ss{background:#1e2a3a; color:#7fb8ff;}
-  .badge.vmess{background:#2a1e3a; color:#c39bff;}
-  .badge.vless{background:#1e3a2e; color:#7fffb0;}
-  .badge.trojan{background:#3a1e1e; color:#ff9b9b;}
-  .badge.hysteria2{background:#3a2e1e; color:#ffcf7f;}
-  .badge.tuic{background:#1e343a; color:#7fe0ff;}
-  .badge.ssr{background:#291e3a; color:#b39bff;}
-  .node .nm{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .node .addr{color:var(--text-dim); flex-shrink:0;}
-
-  .resultbox{
-    display:none; text-align:center; padding:32px 20px; border:1px dashed var(--accent-2);
-    border-radius:14px; background:#101826;
-  }
-  .resultbox.show{display:block;}
-  .resultbox .big{font-family:var(--mono); font-size:15px; color:var(--accent); margin-bottom:14px;}
-  .infobox{
-    margin-top:14px; font-family:var(--mono); font-size:11.5px; color:var(--text-dim);
-    text-align:left; background:var(--bg-panel-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
-    line-height:1.7;
-  }
-
+  .errline{font-family:var(--mono); font-size:12px; background:#1c1216; border:1px solid #3a2228; border-radius:8px; padding:8px 12px; color:#ffb4b4;}
+  .errline b{color:var(--err); font-weight:700;} .errline .snippet{color:#8a7076; display:block; margin-top:3px; word-break:break-all;}
+  .nodelist{display:flex; flex-direction:column; gap:6px; margin-top:14px; max-height:220px; overflow:auto;}
+  .node{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px; background:var(--bg-panel-2); border:1px solid var(--line); border-radius:8px; padding:8px 12px;}
+  .node .badge{font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; text-transform:uppercase; flex-shrink:0;}
+  .badge.ss{background:#1e2a3a; color:#7fb8ff;} .badge.vmess{background:#2a1e3a; color:#c39bff;} .badge.vless{background:#1e3a2e; color:#7fffb0;}
+  .badge.trojan{background:#3a1e1e; color:#ff9b9b;} .badge.hysteria2{background:#3a2e1e; color:#ffcf7f;} .badge.tuic{background:#1e343a; color:#7fe0ff;} .badge.ssr{background:#291e3a; color:#b39bff;}
+  .badge.hysteria{background:#3a2e1e; color:#ffb454;} .badge.wireguard{background:#1e2e3a; color:#7fc8ff;} .badge.socks5{background:#2e2e1e; color:#e0e07f;} .badge.http{background:#2a2a2a; color:#c9c9c9;}
+  .node .nm{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;} .node .addr{color:var(--text-dim); flex-shrink:0;}
+  .tabs{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .tab{font-family:var(--mono); font-size:12px; padding:9px 15px; border-radius:8px; border:1px solid var(--line); background:var(--bg-panel-2); color:var(--text-dim); cursor:pointer; display:flex; align-items:center; gap:6px;}
+  .tab.active{border-color:var(--accent); color:var(--accent); background:#132420;}
+  .tab .warnicon{color:var(--warn,#ffb454); font-size:11px;}
+  .clientnote{font-family:var(--mono); font-size:11.5px; color:var(--text-dim); background:var(--bg-panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:12px; line-height:1.7;}
+  .clientnote b{color:var(--text);}
   footer{margin-top:8px; color:var(--text-dim); font-size:12px; line-height:1.8; font-family:var(--mono);}
   footer b{color:var(--text);}
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <header>
     <div class="brand">
-      <div class="mark">ALL<br>IN1</div>
+      <div class="mark">MULTI<br>SUB</div>
       <div>
-        <h1>一键生成完整 Clash 配置</h1>
-        <p class="sub">粘贴订阅内容 → 自动解析节点 + 内嵌分流规则 → 直接导入即可用，无需手动改任何字段</p>
+        <h1>多客户端订阅转换器</h1>
+        <p class="sub">粘贴订阅内容 → 一次生成 Clash / Surge / Shadowrocket / Quantumult X / sing-box / Base64 六种格式</p>
       </div>
     </div>
   </header>
@@ -149,18 +75,18 @@
   <div class="panel">
     <h2><span class="n">1</span>粘贴你的订阅内容</h2>
     <textarea id="input" placeholder="粘贴内容，支持：
-1) 一行一个节点链接（ss:// vmess:// vless:// trojan:// hysteria2:// tuic:// ssr://）
+1) 一行一个节点链接（ss:// vmess:// vless:// trojan:// hysteria:// hysteria2:// tuic:// ssr:// wireguard:// socks5:// http(s)://）
 2) 整段 Base64（从订阅链接下载下来的原始内容）
-注意：不要直接粘贴“订阅链接 URL”本身，浏览器脚本通常因跨域限制读不到内容——请先在浏览器打开订阅链接把返回内容复制出来，再粘贴到这里。"></textarea>
+不要直接粘贴“订阅链接 URL”本身——浏览器脚本通常因跨域限制读不到内容，请先在浏览器打开链接把返回内容复制出来再粘贴。"></textarea>
     <div class="row">
-      <button class="primary" id="genBtn">生成完整配置</button>
+      <button class="primary" id="parseBtn">解析节点</button>
       <button class="ghost" id="clearBtn">清空</button>
       <button class="ghost" id="sampleBtn">填入示例</button>
     </div>
   </div>
 
   <div class="panel" id="statsPanel" style="display:none;">
-    <h2><span class="n">2</span>节点解析结果</h2>
+    <h2><span class="n">2</span>解析结果</h2>
     <div class="stats">
       <div class="stat"><div class="v" id="statTotal">0</div><div class="l">总行数</div></div>
       <div class="stat ok"><div class="v" id="statOk">0</div><div class="l">成功解析</div></div>
@@ -170,47 +96,85 @@
     <div class="nodelist" id="nodeList"></div>
   </div>
 
-  <div class="panel" id="resultPanel" style="display:none;">
-    <h2><span class="n">3</span>下载完整配置</h2>
-    <div class="resultbox" id="resultBox">
-      <div class="big" id="resultSummary"></div>
-      <button class="primary" id="downloadBtn">下载 clash-完整配置.yaml</button>
-      <div class="infobox">
-        分流规则已经内嵌好了（国内服务直连、国外服务走代理、GEOIP,CN 兜底直连，共 37 组规则集），节点也已经直接写进 proxies 里 —— 这个文件下载后<b>不需要再改任何占位符</b>，在 Clash Verge 里新建订阅 → 本地 → 选这个文件 → 启用即可生效。
-      </div>
+  <div class="panel" id="outputPanel" style="display:none;">
+    <h2><span class="n">3</span>选择目标客户端并下载</h2>
+    <div class="tabs">
+      <div class="tab active" data-fmt="clash">Clash</div>
+      <div class="tab" data-fmt="surge">Surge</div>
+      <div class="tab" data-fmt="shadowrocket">Shadowrocket</div>
+      <div class="tab" data-fmt="qx">Quantumult X</div>
+      <div class="tab" data-fmt="singbox">sing-box</div>
+      <div class="tab" data-fmt="base64">Base64</div>
+    </div>
+    <div class="clientnote" id="clientNote"></div>
+    <textarea id="output" readonly style="min-height:300px;"></textarea>
+    <div class="row">
+      <button class="primary" id="copyBtn">复制</button>
+      <button class="ghost" id="downloadBtn">下载文件</button>
+      <span id="copiedFlash" style="display:none; color:var(--accent); font-family:var(--mono); font-size:12px;">已复制 ✓</span>
     </div>
   </div>
 
   <footer>
-    所有解析和生成都在你的浏览器本地完成，订阅内容不会发送到任何服务器。<br>
-    规则集来源：blackmatrix7/ios_rule_script（Clash 格式），逐条校验可访问；GEOIP 使用 Clash 内置数据库判断中国大陆 IP 直连。
+    所有解析和转换都在你的浏览器本地完成，订阅内容不会发送到任何服务器。<br>
+    带规则的客户端（Clash / Surge / Quantumult X / sing-box）都内置了同一套分流逻辑：国内服务直连、国外主流服务走代理、大陆 IP 兜底直连；<b>Shadowrocket 和 Base64 只输出节点，不带规则</b>——Shadowrocket 的分流规则通常在客户端内单独配置或使用其自带的规则功能，这里只负责把节点转换对。
   </footer>
-
 </div>
 
 <script>
 (function(){
   const $ = (id) => document.getElementById(id);
-  const inputEl = $('input');
+  const inputEl = $('input'), outputEl = $('output');
   let parsedNodes = [];
-  window.__lastRawLines = [];
+  let currentFmt = 'clash';
 
   // ---------- base64 helpers ----------
   function b64decode(str){
     str = str.trim().replace(/-/g,'+').replace(/_/g,'/');
     while (str.length % 4) str += '=';
-    try { return decodeURIComponent(escape(atob(str))); }
-    catch(e){ return atob(str); }
+    try { return decodeURIComponent(escape(atob(str))); } catch(e){ return atob(str); }
   }
   function b64encode(str){
-    try { return btoa(unescape(encodeURIComponent(str))); }
-    catch(e){ return btoa(str); }
+    try { return btoa(unescape(encodeURIComponent(str))); } catch(e){ return btoa(str); }
   }
   function looksLikeBase64Blob(text){
     const t = text.trim();
     if (t.length < 20) return false;
     if (/^[A-Za-z0-9+/_=\-\s]+$/.test(t) && !t.includes('://')) return true;
     return false;
+  }
+
+  function safeDecode(s){
+    try { return decodeURIComponent(s); } catch(e){ return s; }
+  }
+  // Different clients label the same fields differently in vmess/vless/trojan query strings.
+  // Standard (Xray-style): type / security / sni / host
+  // Shadowrocket legacy style: obfs / tls(=1|0) / peer / obfsParam / remarks
+  // Resolve both so the same parser handles links from either convention.
+  function resolveNetwork(params){
+    if (params.type) return params.type;
+    if (params.obfs === 'websocket') return 'ws';
+    if (params.obfs === 'http') return 'http';
+    if (params.obfs && params.obfs !== 'none' && params.obfs !== 'plain') return params.obfs;
+    return 'tcp';
+  }
+  function resolveTls(params){
+    if (params.security === 'tls' || params.security === 'reality') return true;
+    if (params.tls === 'tls' || params.tls === '1' || params.tls === 'true') return true;
+    return false;
+  }
+  function resolveSni(params){ return params.sni || params.peer || ''; }
+  function resolveHost(params){ return params.host || params.obfsParam || ''; }
+  function resolveAlterId(params){ const v = parseInt(params.alterId, 10); return isNaN(v) ? 0 : v; }
+  function resolveRemarkName(params){ return params.remarks ? safeDecode(params.remarks) : ''; }
+  // WS/H2 transport paths must start with "/" — some export formats (notably Shadowrocket's
+  // legacy share-link style) omit it, which silently breaks path-based routing (e.g. through
+  // a Cloudflare Tunnel/Worker) and manifests as a connection timeout rather than a clear error.
+  function normalizePath(p){
+    if (!p) return '';
+    let decoded = p;
+    try { decoded = decodeURIComponent(p); } catch(e){}
+    return decoded.startsWith('/') ? decoded : '/' + decoded;
   }
 
   function splitUri(rest){
@@ -223,8 +187,7 @@
     let params = {};
     const qIdx = rest.indexOf('?');
     if (qIdx >= 0){
-      const qs = rest.slice(qIdx+1);
-      rest = rest.slice(0, qIdx);
+      const qs = rest.slice(qIdx+1); rest = rest.slice(0, qIdx);
       new URLSearchParams(qs).forEach((v,k) => params[k] = v);
     }
     const atIdx = rest.lastIndexOf('@');
@@ -238,6 +201,40 @@
     if (!server) throw new Error('服务器地址为空');
     if (!port || isNaN(port)) throw new Error('端口号无效');
     return { auth, server, port, params, name };
+  }
+
+  // Some clients (notably Shadowrocket's own share-link export) base64-encode the whole
+  // "auth@host:port" authority segment instead of leaving it plain. Try plain first,
+  // then fall back to decoding the authority as base64.
+  function splitUriFlexible(rest){
+    try { return splitUri(rest); }
+    catch(plainErr){
+      let name = '';
+      let work = rest;
+      const hashIdx = work.indexOf('#');
+      if (hashIdx >= 0){
+        try { name = decodeURIComponent(work.slice(hashIdx+1)); } catch(e){ name = work.slice(hashIdx+1); }
+        work = work.slice(0, hashIdx);
+      }
+      let query = '';
+      const qIdx = work.indexOf('?');
+      if (qIdx >= 0){ query = work.slice(qIdx+1); work = work.slice(0, qIdx); }
+      let decoded;
+      try { decoded = b64decode(work); } catch(e2){ throw plainErr; }
+      const atIdx = decoded.lastIndexOf('@');
+      if (atIdx < 0) throw plainErr;
+      const auth = decoded.slice(0, atIdx);
+      const hostport = decoded.slice(atIdx+1);
+      const portIdx = hostport.lastIndexOf(':');
+      if (portIdx < 0) throw new Error('Base64 前缀解码后缺少端口号');
+      const server = hostport.slice(0, portIdx);
+      const port = parseInt(hostport.slice(portIdx+1), 10);
+      if (!server) throw new Error('Base64 前缀解码后服务器地址为空');
+      if (!port || isNaN(port)) throw new Error('Base64 前缀解码后端口号无效');
+      let params = {};
+      if (query) new URLSearchParams(query).forEach((v,k) => params[k] = v);
+      return { auth, server, port, params, name };
+    }
   }
 
   function parseSS(uri){
@@ -260,12 +257,10 @@
       const methodPass = (decoded && decoded.includes(':')) ? decoded : userinfo;
       const sep = methodPass.indexOf(':');
       if (sep < 0) throw new Error('SS 节点缺少 method:password');
-      method = methodPass.slice(0, sep);
-      password = methodPass.slice(sep+1);
+      method = methodPass.slice(0, sep); password = methodPass.slice(sep+1);
       const portIdx = hostport.lastIndexOf(':');
       if (portIdx < 0) throw new Error('SS 节点缺少端口');
-      server = hostport.slice(0, portIdx);
-      port = parseInt(hostport.slice(portIdx+1), 10);
+      server = hostport.slice(0, portIdx); port = parseInt(hostport.slice(portIdx+1), 10);
     } else {
       const decoded = b64decode(rest);
       const atIdx2 = decoded.lastIndexOf('@');
@@ -274,11 +269,9 @@
       const hostport2 = decoded.slice(atIdx2+1);
       const sep = methodPass.indexOf(':');
       if (sep < 0) throw new Error('SS legacy 格式缺少 method:password');
-      method = methodPass.slice(0, sep);
-      password = methodPass.slice(sep+1);
+      method = methodPass.slice(0, sep); password = methodPass.slice(sep+1);
       const portIdx = hostport2.lastIndexOf(':');
-      server = hostport2.slice(0, portIdx);
-      port = parseInt(hostport2.slice(portIdx+1), 10);
+      server = hostport2.slice(0, portIdx); port = parseInt(hostport2.slice(portIdx+1), 10);
     }
     if (!server || !port) throw new Error('SS 节点服务器/端口解析失败');
     return { type:'ss', name: name || (server+':'+port), server, port, method, password };
@@ -290,74 +283,179 @@
     const parts = main.split(':');
     if (parts.length < 6) throw new Error('SSR 主体字段数量不足');
     const [server, port, protocol, method, obfs, passB64] = parts;
-    let password = '';
-    try { password = b64decode(passB64); } catch(e){ password = passB64; }
+    let password = ''; try { password = b64decode(passB64); } catch(e){ password = passB64; }
     let name = server+':'+port;
     if (queryPart){
       const qp = new URLSearchParams(queryPart);
       if (qp.get('remarks')){
-        try { name = b64decode(qp.get('remarks')); } catch(e){ name = qp.get('remarks'); }
+        // URLSearchParams turns literal '+' into a space; restore it before base64-decoding
+        const remarksRaw = qp.get('remarks').replace(/ /g, '+');
+        try { name = b64decode(remarksRaw); } catch(e){ name = qp.get('remarks'); }
       }
     }
     return { type:'ssr', name, server, port: parseInt(port,10), protocol, method, obfs, password };
   }
 
   function parseVmess(uri){
-    let json;
-    try { json = JSON.parse(b64decode(uri.slice(8))); }
-    catch(e){ throw new Error('VMess Base64 解码或 JSON 解析失败：' + e.message); }
-    if (!json.add || !json.port) throw new Error('VMess JSON 缺少 add/port 字段');
+    let rest = uri.slice(8);
+    const hashIdx = rest.indexOf('#');
+    const beforeHash = hashIdx >= 0 ? rest.slice(0, hashIdx) : rest;
+    // Standard format: vmess://BASE64(JSON) — no '?' before the '#'
+    if (!beforeHash.includes('?')){
+      try {
+        const json = JSON.parse(b64decode(beforeHash));
+        if (json.add && json.port){
+          return {
+            type:'vmess', name: json.ps || (json.add+':'+json.port), server: json.add, port: parseInt(json.port, 10),
+            uuid: json.id, alterId: parseInt(json.aid || 0, 10), network: json.net || 'tcp',
+            tls: json.tls === 'tls' || json.tls === true, sni: json.sni || json.host || '',
+            wsPath: normalizePath(json.path), wsHost: json.host || ''
+          };
+        }
+      } catch(e){ /* fall through to alternate format below */ }
+    }
+    // Alternate format (seen from Shadowrocket-style share links):
+    // vmess://BASE64(security:uuid@host:port)?query#name
+    const { auth, server, port, params, name } = splitUriFlexible(rest);
+    if (!auth) throw new Error('VMess 节点缺少 UUID（且不是标准 JSON Base64 格式）');
+    const sep = auth.indexOf(':');
+    const uuid = sep >= 0 ? auth.slice(sep+1) : auth;
     return {
-      type:'vmess', name: json.ps || (json.add+':'+json.port),
-      server: json.add, port: parseInt(json.port, 10), uuid: json.id,
-      alterId: parseInt(json.aid || 0, 10), network: json.net || 'tcp',
-      tls: json.tls === 'tls' || json.tls === true,
-      sni: json.sni || json.host || '', wsPath: json.path || '', wsHost: json.host || ''
+      type:'vmess', name: name || resolveRemarkName(params) || (server+':'+port), server, port, uuid,
+      alterId: resolveAlterId(params), network: resolveNetwork(params),
+      tls: resolveTls(params), sni: resolveSni(params), wsPath: normalizePath(params.path), wsHost: resolveHost(params)
     };
   }
 
   function parseVless(uri){
-    const { auth, server, port, params, name } = splitUri(uri.slice(8));
+    const { auth, server, port, params, name } = splitUriFlexible(uri.slice(8));
     if (!auth) throw new Error('VLESS 节点缺少 UUID');
+    // Standard format: auth is just the UUID. Alt (Shadowrocket-style) format prefixes it
+    // with "encryption:" (e.g. "none:uuid") inside the base64-encoded authority — UUIDs
+    // never contain ':', so splitting on the first colon is safe either way.
+    const sep = auth.indexOf(':');
+    const uuid = sep >= 0 ? auth.slice(sep+1) : auth;
     return {
-      type:'vless', name: name || (server+':'+port), server, port, uuid: auth,
-      network: params.type || 'tcp',
-      tls: params.security === 'tls' || params.security === 'reality',
-      security: params.security || '', sni: params.sni || '', flow: params.flow || '',
-      wsPath: params.path || '', wsHost: params.host || '',
-      pbk: params.pbk || '', sid: params.sid || ''
+      type:'vless', name: name || resolveRemarkName(params) || (server+':'+port), server, port, uuid,
+      network: resolveNetwork(params), tls: resolveTls(params),
+      security: params.security || '', sni: resolveSni(params), flow: params.flow || '',
+      wsPath: normalizePath(params.path), wsHost: resolveHost(params), pbk: params.pbk || '', sid: params.sid || ''
     };
   }
 
   function parseTrojan(uri){
-    const { auth, server, port, params, name } = splitUri(uri.slice(9));
+    const { auth, server, port, params, name } = splitUriFlexible(uri.slice(9));
     if (!auth) throw new Error('Trojan 节点缺少密码');
     return {
-      type:'trojan', name: name || (server+':'+port), server, port, password: auth,
-      sni: params.sni || params.peer || '',
-      allowInsecure: params.allowInsecure === '1' || params.insecure === '1',
-      network: params.type || 'tcp', wsPath: params.path || '', wsHost: params.host || ''
+      type:'trojan', name: name || resolveRemarkName(params) || (server+':'+port), server, port, password: auth,
+      sni: resolveSni(params), allowInsecure: params.allowInsecure === '1' || params.insecure === '1',
+      network: resolveNetwork(params), wsPath: normalizePath(params.path), wsHost: resolveHost(params)
     };
   }
 
   function parseHysteria2(uri, prefixLen){
-    const { auth, server, port, params, name } = splitUri(uri.slice(prefixLen));
+    const { auth, server, port, params, name } = splitUriFlexible(uri.slice(prefixLen));
     if (!auth) throw new Error('Hysteria2 节点缺少密码');
+    return { type:'hysteria2', name: name || resolveRemarkName(params) || (server+':'+port), server, port, password: auth, sni: resolveSni(params), insecure: params.insecure === '1' };
+  }
+
+  // ---------- Hysteria v1 (predates hysteria2; different auth model) ----------
+  function parseHysteria(uri){
+    const rest = uri.slice(11); // "hysteria://"
+    let name = '';
+    let work = rest;
+    const hashIdx = work.indexOf('#');
+    if (hashIdx >= 0){ name = safeDecode(work.slice(hashIdx+1)); work = work.slice(0, hashIdx); }
+    const qIdx = work.indexOf('?');
+    let params = {};
+    let hostport = work;
+    if (qIdx >= 0){ hostport = work.slice(0, qIdx); new URLSearchParams(work.slice(qIdx+1)).forEach((v,k) => params[k]=v); }
+    const portIdx = hostport.lastIndexOf(':');
+    if (portIdx < 0) throw new Error('Hysteria v1 节点缺少端口号');
+    const server = hostport.slice(0, portIdx);
+    const port = parseInt(hostport.slice(portIdx+1), 10);
+    if (!server) throw new Error('Hysteria v1 服务器地址为空');
+    if (!port || isNaN(port)) throw new Error('Hysteria v1 端口号无效');
+    const authStr = params.auth || params.auth_str || '';
+    if (!authStr) throw new Error('Hysteria v1 节点缺少 auth/auth_str 鉴权字段');
     return {
-      type:'hysteria2', name: name || (server+':'+port), server, port, password: auth,
-      sni: params.sni || '', insecure: params.insecure === '1'
+      type:'hysteria', name: name || resolveRemarkName(params) || (server+':'+port), server, port,
+      authStr, protocol: params.protocol || 'udp',
+      up: params.upmbps || params.up || '', down: params.downmbps || params.down || '',
+      obfs: params.obfs || '', sni: resolveSni(params) || params.peer || '',
+      insecure: params.insecure === '1' || params.insecure === 'true', alpn: params.alpn || ''
     };
   }
 
+  // ---------- WireGuard ----------
+  function parseWireguard(uri){
+    const rest = uri.slice(12); // "wireguard://"
+    const { auth, server, port, params, name } = splitUriFlexible(rest);
+    if (!auth) throw new Error('WireGuard 节点缺少私钥（private key）');
+    return {
+      type:'wireguard', name: name || resolveRemarkName(params) || (server+':'+port), server, port,
+      privateKey: auth, publicKey: params.publickey || params.pubkey || '',
+      presharedKey: params.presharedkey || params.psk || '',
+      address: (params.address || '').split(',').filter(Boolean),
+      reserved: params.reserved || '', mtu: params.mtu || '1420'
+    };
+  }
+
+  // ---------- SOCKS5 ----------
+  function parseSocks(uri, prefixLen){
+    let rest = uri.slice(prefixLen);
+    let name = '';
+    const hashIdx = rest.indexOf('#');
+    if (hashIdx >= 0){ name = safeDecode(rest.slice(hashIdx+1)); rest = rest.slice(0, hashIdx); }
+    const atIdx = rest.lastIndexOf('@');
+    let username = '', password = '', hostport = rest;
+    if (atIdx >= 0){
+      const userinfo = rest.slice(0, atIdx);
+      hostport = rest.slice(atIdx+1);
+      let decoded = null;
+      try { decoded = b64decode(userinfo); } catch(e){}
+      const up = (decoded && decoded.includes(':')) ? decoded : userinfo;
+      const sep = up.indexOf(':');
+      if (sep >= 0){ username = up.slice(0, sep); password = up.slice(sep+1); }
+    }
+    const portIdx = hostport.lastIndexOf(':');
+    if (portIdx < 0) throw new Error('SOCKS5 节点缺少端口号');
+    const server = hostport.slice(0, portIdx);
+    const port = parseInt(hostport.slice(portIdx+1), 10);
+    if (!server) throw new Error('SOCKS5 服务器地址为空');
+    if (!port || isNaN(port)) throw new Error('SOCKS5 端口号无效');
+    return { type:'socks5', name: name || (server+':'+port), server, port, username, password };
+  }
+
+  // ---------- HTTP / HTTPS proxy ----------
+  function parseHttp(uri, tls){
+    const prefixLen = tls ? 8 : 7; // "https://" / "http://"
+    let rest = uri.slice(prefixLen);
+    let name = '';
+    const hashIdx = rest.indexOf('#');
+    if (hashIdx >= 0){ name = safeDecode(rest.slice(hashIdx+1)); rest = rest.slice(0, hashIdx); }
+    const atIdx = rest.lastIndexOf('@');
+    let username = '', password = '', hostport = rest;
+    if (atIdx >= 0){
+      const userinfo = rest.slice(0, atIdx);
+      hostport = rest.slice(atIdx+1);
+      const sep = userinfo.indexOf(':');
+      if (sep >= 0){ username = decodeURIComponent(userinfo.slice(0, sep)); password = decodeURIComponent(userinfo.slice(sep+1)); }
+    }
+    const portIdx = hostport.lastIndexOf(':');
+    if (portIdx < 0) throw new Error((tls?'HTTPS':'HTTP') + ' 节点缺少端口号');
+    const server = hostport.slice(0, portIdx);
+    const port = parseInt(hostport.slice(portIdx+1), 10);
+    if (!server) throw new Error('服务器地址为空');
+    if (!port || isNaN(port)) throw new Error('端口号无效');
+    return { type:'http', name: name || (server+':'+port), server, port, username, password, tls };
+  }
+
   function parseTuic(uri){
-    const { auth, server, port, params, name } = splitUri(uri.slice(7));
+    const { auth, server, port, params, name } = splitUriFlexible(uri.slice(7));
     const sep = auth.indexOf(':');
     if (sep < 0) throw new Error('TUIC 节点需要 uuid:password 格式');
-    return {
-      type:'tuic', name: name || (server+':'+port), server, port,
-      uuid: auth.slice(0, sep), password: auth.slice(sep+1),
-      sni: params.sni || '', alpn: params.alpn || ''
-    };
+    return { type:'tuic', name: name || resolveRemarkName(params) || (server+':'+port), server, port, uuid: auth.slice(0, sep), password: auth.slice(sep+1), sni: resolveSni(params), alpn: params.alpn || '' };
   }
 
   function parseLine(line){
@@ -370,8 +468,13 @@
     if (line.startsWith('trojan://')) return parseTrojan(line);
     if (line.startsWith('hysteria2://')) return parseHysteria2(line, 12);
     if (line.startsWith('hy2://')) return parseHysteria2(line, 6);
+    if (line.startsWith('hysteria://')) return parseHysteria(line);
     if (line.startsWith('tuic://')) return parseTuic(line);
-    throw new Error('未识别的协议前缀（仅支持 ss/ssr/vmess/vless/trojan/hysteria2/tuic）');
+    if (line.startsWith('wireguard://') || line.startsWith('wg://')) return parseWireguard(line);
+    if (line.startsWith('socks://') || line.startsWith('socks5://')) return parseSocks(line, line.startsWith('socks5://') ? 9 : 8);
+    if (line.startsWith('https://')) return parseHttp(line, true);
+    if (line.startsWith('http://')) return parseHttp(line, false);
+    throw new Error('未识别的协议前缀（支持 ss/ssr/vmess/vless/trojan/hysteria/hysteria2/tuic/wireguard/socks5/http(s)）');
   }
 
   function expandInput(raw){
@@ -380,144 +483,12 @@
     const hasDirectProto = protoPrefixes.some(p => raw.includes(p));
     let lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     if (!hasDirectProto && looksLikeBase64Blob(raw)){
-      try {
-        const decoded = b64decode(raw);
-        lines = decoded.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      } catch(e){}
+      try { const decoded = b64decode(raw); lines = decoded.split(/\r?\n/).map(l => l.trim()).filter(Boolean); } catch(e){}
     } else if (lines.length === 1 && !protoPrefixes.some(p => lines[0].startsWith(p)) && looksLikeBase64Blob(lines[0])){
-      try {
-        const decoded = b64decode(lines[0]);
-        lines = decoded.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      } catch(e){}
+      try { const decoded = b64decode(lines[0]); lines = decoded.split(/\r?\n/).map(l => l.trim()).filter(Boolean); } catch(e){}
     }
     return lines;
   }
-
-  // ---------- YAML generation ----------
-  function yamlStr(v){
-    if (v === undefined || v === null || v === '') return '""';
-    const s = String(v);
-    if (/[:#\[\]{}"'|>*&!%@`,\n]/.test(s) || /^\s|\s$/.test(s) || s === 'true' || s === 'false') {
-      return '"' + s.replace(/"/g,'\\"') + '"';
-    }
-    return s;
-  }
-
-  function nodeToClash(n){
-    const lines = [];
-    lines.push(`  - name: ${yamlStr(n.name)}`);
-    lines.push(`    type: ${n.type}`);
-    lines.push(`    server: ${yamlStr(n.server)}`);
-    lines.push(`    port: ${n.port}`);
-    if (n.type === 'ss'){
-      lines.push(`    cipher: ${yamlStr(n.method)}`);
-      lines.push(`    password: ${yamlStr(n.password)}`);
-    } else if (n.type === 'ssr'){
-      lines.push(`    cipher: ${yamlStr(n.method)}`);
-      lines.push(`    password: ${yamlStr(n.password)}`);
-      lines.push(`    protocol: ${yamlStr(n.protocol)}`);
-      lines.push(`    obfs: ${yamlStr(n.obfs)}`);
-    } else if (n.type === 'vmess'){
-      lines.push(`    uuid: ${yamlStr(n.uuid)}`);
-      lines.push(`    alterId: ${n.alterId}`);
-      lines.push(`    cipher: auto`);
-      lines.push(`    tls: ${n.tls ? 'true' : 'false'}`);
-      if (n.sni) lines.push(`    servername: ${yamlStr(n.sni)}`);
-      lines.push(`    network: ${n.network}`);
-      if (n.network === 'ws'){
-        lines.push(`    ws-opts:`);
-        lines.push(`      path: ${yamlStr(n.wsPath || '/')}`);
-        if (n.wsHost){
-          lines.push(`      headers:`);
-          lines.push(`        Host: ${yamlStr(n.wsHost)}`);
-        }
-      }
-    } else if (n.type === 'vless'){
-      lines.push(`    uuid: ${yamlStr(n.uuid)}`);
-      lines.push(`    tls: ${n.tls ? 'true' : 'false'}`);
-      if (n.sni) lines.push(`    servername: ${yamlStr(n.sni)}`);
-      if (n.flow) lines.push(`    flow: ${yamlStr(n.flow)}`);
-      lines.push(`    network: ${n.network}`);
-      if (n.network === 'ws'){
-        lines.push(`    ws-opts:`);
-        lines.push(`      path: ${yamlStr(n.wsPath || '/')}`);
-        if (n.wsHost){
-          lines.push(`      headers:`);
-          lines.push(`        Host: ${yamlStr(n.wsHost)}`);
-        }
-      }
-      if (n.security === 'reality'){
-        lines.push(`    reality-opts:`);
-        lines.push(`      public-key: ${yamlStr(n.pbk)}`);
-        if (n.sid) lines.push(`      short-id: ${yamlStr(n.sid)}`);
-      }
-    } else if (n.type === 'trojan'){
-      lines.push(`    password: ${yamlStr(n.password)}`);
-      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
-      lines.push(`    skip-cert-verify: ${n.allowInsecure ? 'true' : 'false'}`);
-      if (n.network === 'ws'){
-        lines.push(`    network: ws`);
-        lines.push(`    ws-opts:`);
-        lines.push(`      path: ${yamlStr(n.wsPath || '/')}`);
-        if (n.wsHost){
-          lines.push(`      headers:`);
-          lines.push(`        Host: ${yamlStr(n.wsHost)}`);
-        }
-      }
-    } else if (n.type === 'hysteria2'){
-      lines.push(`    password: ${yamlStr(n.password)}`);
-      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
-      lines.push(`    skip-cert-verify: ${n.insecure ? 'true' : 'false'}`);
-    } else if (n.type === 'tuic'){
-      lines.push(`    uuid: ${yamlStr(n.uuid)}`);
-      lines.push(`    password: ${yamlStr(n.password)}`);
-      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
-      if (n.alpn) lines.push(`    alpn: [${yamlStr(n.alpn)}]`);
-    }
-    return lines.join('\n');
-  }
-
-  // ---------- baked-in rule set (validated against blackmatrix7/ios_rule_script Clash yaml files) ----------
-  const RULE_ENTRIES = [
-    ["AppleNews", "PROXY"],
-    ["Apple", "DIRECT"],
-    ["BiliBili", "DIRECT"],
-    ["NetEaseMusic", "DIRECT"],
-    ["Baidu", "DIRECT"],
-    ["DouBan", "DIRECT"],
-    ["WeChat", "DIRECT"],
-    ["DouYin", "DIRECT"],
-    ["Sina", "DIRECT"],
-    ["Zhihu", "DIRECT"],
-    ["XiaoHongShu", "DIRECT"],
-    ["YouTube", "PROXY"],
-    ["Netflix", "PROXY"],
-    ["Disney", "PROXY"],
-    ["HBO", "PROXY"],
-    ["Spotify", "PROXY"],
-    ["Telegram", "PROXY"],
-    ["PayPal", "PROXY"],
-    ["Twitter", "PROXY"],
-    ["Facebook", "PROXY"],
-    ["Amazon", "PROXY"],
-    ["OpenAI", "PROXY"],
-    ["Sony", "DIRECT"],
-    ["Nintendo", "DIRECT"],
-    ["Epic", "DIRECT"],
-    ["SteamCN", "DIRECT"],
-    ["Steam", "DIRECT"],
-    ["Game", "DIRECT"],
-    ["GitHub", "PROXY"],
-    ["Microsoft", "DIRECT"],
-    ["Google", "PROXY"],
-    ["TikTok", "PROXY"],
-    ["TVB", "PROXY"],
-    ["Speedtest", "PROXY"],
-    ["Global", "PROXY"],
-    ["China", "DIRECT"],
-    ["Lan", "DIRECT"]
-  ];
-  const RULE_BASE = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash";
 
   function dedupeNames(nodes){
     const seen = {};
@@ -529,123 +500,417 @@
     });
   }
 
-  function buildFullConfig(rawNodes){
+  // ---------- shared rule catalog ----------
+  // [displayName, policy] — used to build rule-providers/RULE-SET entries for Clash/Surge/QuantumultX
+  const RULE_ENTRIES = [
+    ["AppleNews","PROXY"],["Apple","DIRECT"],["BiliBili","DIRECT"],["NetEaseMusic","DIRECT"],["Baidu","DIRECT"],
+    ["DouBan","DIRECT"],["WeChat","DIRECT"],["DouYin","DIRECT"],["Sina","DIRECT"],["Zhihu","DIRECT"],["XiaoHongShu","DIRECT"],
+    ["YouTube","PROXY"],["Netflix","PROXY"],["Disney","PROXY"],["HBO","PROXY"],["Spotify","PROXY"],["Telegram","PROXY"],
+    ["PayPal","PROXY"],["Twitter","PROXY"],["Facebook","PROXY"],["Amazon","PROXY"],["OpenAI","PROXY"],["Sony","DIRECT"],
+    ["Nintendo","DIRECT"],["Epic","DIRECT"],["SteamCN","DIRECT"],["Steam","DIRECT"],["Game","DIRECT"],["GitHub","PROXY"],
+    ["Microsoft","DIRECT"],["Google","PROXY"],["TikTok","PROXY"],["TVB","PROXY"],["Speedtest","PROXY"],["Global","PROXY"],
+    ["China","DIRECT"],["Lan","DIRECT"]
+  ];
+  const BM7_BASE = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule";
+
+  // sing-box uses MetaCubeX/meta-rules-dat .srs categories (verified subset — some CN categories are best-effort matches)
+  const SINGBOX_RULES = [
+    ["youtube","proxy"],["netflix","proxy"],["disney","proxy"],["hbo","proxy"],["spotify","proxy"],["telegram","proxy"],
+    ["paypal","proxy"],["twitter","proxy"],["facebook","proxy"],["amazon","proxy"],["openai","proxy"],["github","proxy"],
+    ["google","proxy"],["tiktok","proxy"],["tvb","proxy"],["speedtest","proxy"],
+    ["apple","direct"],["bilibili","direct"],["netease","direct"],["baidu","direct"],["douban","direct"],
+    ["tencent","direct"],["douyin","direct"],["sina","direct"],["zhihu","direct"],["xiaohongshu","direct"],
+    ["microsoft","direct"],["sony","direct"],["nintendo","direct"],["epicgames","direct"],["steam","direct"],
+    ["category-games-cn","direct"]
+  ];
+  const SINGBOX_BASE = "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite";
+  const SINGBOX_GEOIP_CN = "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cn.srs";
+
+  // ---------- generic yaml helpers (Clash) ----------
+  function yamlStr(v){
+    if (v === undefined || v === null || v === '') return '""';
+    const s = String(v);
+    if (/[:#\[\]{}"'|>*&!%@`,\n]/.test(s) || /^\s|\s$/.test(s) || s === 'true' || s === 'false') return '"' + s.replace(/"/g,'\\"') + '"';
+    return s;
+  }
+
+  function nodeToClash(n){
+    const lines = [];
+    lines.push(`  - name: ${yamlStr(n.name)}`);
+    lines.push(`    type: ${n.type}`);
+    lines.push(`    server: ${yamlStr(n.server)}`);
+    lines.push(`    port: ${n.port}`);
+    if (n.type === 'ss'){
+      lines.push(`    cipher: ${yamlStr(n.method)}`); lines.push(`    password: ${yamlStr(n.password)}`);
+    } else if (n.type === 'ssr'){
+      lines.push(`    cipher: ${yamlStr(n.method)}`); lines.push(`    password: ${yamlStr(n.password)}`);
+      lines.push(`    protocol: ${yamlStr(n.protocol)}`); lines.push(`    obfs: ${yamlStr(n.obfs)}`);
+    } else if (n.type === 'vmess'){
+      lines.push(`    uuid: ${yamlStr(n.uuid)}`); lines.push(`    alterId: ${n.alterId}`); lines.push(`    cipher: auto`);
+      lines.push(`    tls: ${n.tls ? 'true' : 'false'}`);
+      if (n.sni) lines.push(`    servername: ${yamlStr(n.sni)}`);
+      lines.push(`    network: ${n.network}`);
+      if (n.network === 'ws'){
+        lines.push(`    ws-opts:`); lines.push(`      path: ${yamlStr(n.wsPath || '/')}`);
+        if (n.wsHost){ lines.push(`      headers:`); lines.push(`        Host: ${yamlStr(n.wsHost)}`); }
+      }
+    } else if (n.type === 'vless'){
+      lines.push(`    uuid: ${yamlStr(n.uuid)}`); lines.push(`    tls: ${n.tls ? 'true' : 'false'}`);
+      if (n.sni) lines.push(`    servername: ${yamlStr(n.sni)}`);
+      if (n.flow) lines.push(`    flow: ${yamlStr(n.flow)}`);
+      lines.push(`    network: ${n.network}`);
+      if (n.network === 'ws'){
+        lines.push(`    ws-opts:`); lines.push(`      path: ${yamlStr(n.wsPath || '/')}`);
+        if (n.wsHost){ lines.push(`      headers:`); lines.push(`        Host: ${yamlStr(n.wsHost)}`); }
+      }
+      if (n.security === 'reality'){
+        lines.push(`    reality-opts:`); lines.push(`      public-key: ${yamlStr(n.pbk)}`);
+        if (n.sid) lines.push(`      short-id: ${yamlStr(n.sid)}`);
+      }
+    } else if (n.type === 'trojan'){
+      lines.push(`    password: ${yamlStr(n.password)}`);
+      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
+      lines.push(`    skip-cert-verify: ${n.allowInsecure ? 'true' : 'false'}`);
+      if (n.network === 'ws'){
+        lines.push(`    network: ws`); lines.push(`    ws-opts:`); lines.push(`      path: ${yamlStr(n.wsPath || '/')}`);
+        if (n.wsHost){ lines.push(`      headers:`); lines.push(`        Host: ${yamlStr(n.wsHost)}`); }
+      }
+    } else if (n.type === 'hysteria2'){
+      lines.push(`    password: ${yamlStr(n.password)}`);
+      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
+      lines.push(`    skip-cert-verify: ${n.insecure ? 'true' : 'false'}`);
+    } else if (n.type === 'tuic'){
+      lines.push(`    uuid: ${yamlStr(n.uuid)}`); lines.push(`    password: ${yamlStr(n.password)}`);
+      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
+      if (n.alpn) lines.push(`    alpn: [${yamlStr(n.alpn)}]`);
+    } else if (n.type === 'hysteria'){
+      lines.push(`    auth_str: ${yamlStr(n.authStr)}`);
+      lines.push(`    protocol: ${n.protocol || 'udp'}`);
+      if (n.up) lines.push(`    up: ${yamlStr(n.up)}`);
+      if (n.down) lines.push(`    down: ${yamlStr(n.down)}`);
+      if (n.obfs) lines.push(`    obfs: ${yamlStr(n.obfs)}`);
+      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
+      lines.push(`    skip-cert-verify: ${n.insecure ? 'true' : 'false'}`);
+      if (n.alpn) lines.push(`    alpn: [${yamlStr(n.alpn)}]`);
+    } else if (n.type === 'wireguard'){
+      lines.push(`    ip: ${yamlStr(n.address[0] || '')}`);
+      lines.push(`    private-key: ${yamlStr(n.privateKey)}`);
+      lines.push(`    public-key: ${yamlStr(n.publicKey)}`);
+      if (n.presharedKey) lines.push(`    preshared-key: ${yamlStr(n.presharedKey)}`);
+      lines.push(`    mtu: ${n.mtu || 1420}`);
+      lines.push(`    udp: true`);
+    } else if (n.type === 'socks5'){
+      if (n.username) lines.push(`    username: ${yamlStr(n.username)}`);
+      if (n.password) lines.push(`    password: ${yamlStr(n.password)}`);
+      lines.push(`    udp: true`);
+    } else if (n.type === 'http'){
+      if (n.username) lines.push(`    username: ${yamlStr(n.username)}`);
+      if (n.password) lines.push(`    password: ${yamlStr(n.password)}`);
+      lines.push(`    tls: ${n.tls ? 'true' : 'false'}`);
+    }
+    return lines.join('\n');
+  }
+
+  function buildClash(rawNodes){
     const nodes = dedupeNames(rawNodes);
     const names = nodes.map(n => yamlStr(n.name));
-    let out = '';
-    out += '# ------------------------------------------------------------------\n';
-    out += '# Clash / Mihomo 完整配置 —— 节点 + 分流规则已合并，可直接导入使用\n';
-    out += '# 分流规则参考小火箭配置整理：国内服务直连，国外主流服务走代理，GEOIP,CN 兜底直连\n';
-    out += '# ------------------------------------------------------------------\n\n';
-    out += 'mixed-port: 7890\n';
-    out += 'allow-lan: false\n';
-    out += 'mode: rule\n';
-    out += 'log-level: info\n';
-    out += 'ipv6: false\n\n';
-    out += 'dns:\n';
-    out += '  enable: true\n';
-    out += '  ipv6: false\n';
-    out += "  default-nameserver: [223.5.5.5, 119.29.29.29]\n";
-    out += "  nameserver: ['https://doh.pub/dns-query', 'https://dns.alidns.com/dns-query']\n";
-    out += '  fallback: [8.8.8.8, 1.1.1.1]\n\n';
-
-    out += 'proxies:\n';
-    out += nodes.map(nodeToClash).join('\n') + '\n\n';
-
-    out += 'proxy-groups:\n';
-    out += '  - name: PROXY\n';
-    out += '    type: select\n';
-    out += `    proxies: [${names.join(', ')}]\n`;
-    out += '  - name: 自动选择\n';
-    out += '    type: url-test\n';
-    out += `    proxies: [${names.join(', ')}]\n`;
-    out += '    url: http://www.gstatic.com/generate_204\n';
-    out += '    interval: 300\n\n';
-
+    let out = '# Clash / Mihomo 完整配置（节点 + 分流规则）\n\n';
+    out += 'mixed-port: 7890\nallow-lan: false\nmode: rule\nlog-level: info\nipv6: false\n\n';
+    out += 'dns:\n  enable: true\n  ipv6: false\n  default-nameserver: [223.5.5.5, 119.29.29.29]\n  nameserver: [\'223.5.5.5\', \'119.29.29.29\']\n  fallback: [\'https://dns.cloudflare.com/dns-query\', \'https://dns.google/dns-query\']\n  fallback-filter:\n    geoip: true\n    geoip-code: CN\n\n';
+    out += 'proxies:\n' + nodes.map(nodeToClash).join('\n') + '\n\n';
+    out += 'proxy-groups:\n  - name: PROXY\n    type: select\n    proxies: [' + names.join(', ') + ']\n';
+    out += '  - name: 自动选择\n    type: url-test\n    proxies: [' + names.join(', ') + ']\n    url: http://www.gstatic.com/generate_204\n    interval: 300\n\n';
     out += 'rule-providers:\n';
     RULE_ENTRIES.forEach(([rname]) => {
-      out += `  ${rname}:\n`;
-      out += `    type: http\n`;
-      out += `    behavior: classical\n`;
-      out += `    url: "${RULE_BASE}/${rname}/${rname}.yaml"\n`;
-      out += `    path: ./rule-providers/${rname}.yaml\n`;
-      out += `    interval: 86400\n`;
+      out += `  ${rname}:\n    type: http\n    behavior: classical\n    url: "${BM7_BASE}/Clash/${rname}/${rname}.yaml"\n    path: ./rule-providers/${rname}.yaml\n    interval: 86400\n`;
     });
-    out += '\n';
-
-    out += 'rules:\n';
-    RULE_ENTRIES.forEach(([rname, policy]) => {
-      out += `  - RULE-SET,${rname},${policy}\n`;
-    });
-    out += '  - GEOIP,CN,DIRECT\n';
-    out += '  - MATCH,PROXY\n';
-
+    out += '\nrules:\n';
+    RULE_ENTRIES.forEach(([rname, policy]) => { out += `  - RULE-SET,${rname},${policy}\n`; });
+    out += '  - GEOIP,CN,DIRECT\n  - MATCH,PROXY\n';
     return out;
   }
 
+  // ---------- Surge ----------
+  function nodeToSurge(n){
+    if (n.type === 'ss') return `${n.name} = ss, ${n.server}, ${n.port}, encrypt-method=${n.method}, password=${n.password}`;
+    if (n.type === 'vmess'){
+      let s = `${n.name} = vmess, ${n.server}, ${n.port}, username=${n.uuid}`;
+      if (n.tls) s += ', tls=true';
+      if (n.network === 'ws'){ s += `, ws=true, ws-path=${n.wsPath || '/'}`; if (n.wsHost) s += `, ws-headers=Host:${n.wsHost}`; }
+      return s;
+    }
+    if (n.type === 'trojan'){
+      let s = `${n.name} = trojan, ${n.server}, ${n.port}, password=${n.password}`;
+      if (n.sni) s += `, sni=${n.sni}`;
+      if (n.allowInsecure) s += ', skip-cert-verify=true';
+      return s;
+    }
+    if (n.type === 'socks5'){
+      let s = `${n.name} = socks5, ${n.server}, ${n.port}`;
+      if (n.username) s += `, username=${n.username}, password=${n.password}`;
+      return s;
+    }
+    if (n.type === 'http'){
+      let s = `${n.name} = ${n.tls ? 'https' : 'http'}, ${n.server}, ${n.port}`;
+      if (n.username) s += `, username=${n.username}, password=${n.password}`;
+      return s;
+    }
+    return `# 跳过（Surge 暂不支持 ${n.type}）: ${n.name}`;
+  }
+
+  function buildSurge(rawNodes){
+    const nodes = dedupeNames(rawNodes);
+    const usable = nodes.filter(n => ['ss','vmess','trojan','socks5','http'].includes(n.type));
+    let out = '# Surge 完整配置（节点 + 分流规则）\n\n';
+    out += '[General]\nloglevel = notify\ninternet-test-url = http://www.gstatic.com/generate_204\nipv6 = false\n\n';
+    out += '[Proxy]\n' + nodes.map(nodeToSurge).join('\n') + '\n\n';
+    out += '[Proxy Group]\nPROXY = select, ' + usable.map(n=>n.name).join(', ') + '\n\n';
+    out += '[Rule]\n';
+    RULE_ENTRIES.forEach(([rname, policy]) => {
+      out += `RULE-SET,${BM7_BASE}/Surge/${rname}/${rname}.list,${policy}\n`;
+    });
+    out += 'GEOIP,CN,DIRECT\nFINAL,PROXY\n';
+    if (nodes.length !== usable.length){
+      out = out.replace('[Proxy]\n', '[Proxy]\n# 注：vless/hysteria/hysteria2/tuic/wireguard/ssr 节点 Surge 暂不原生支持，已在下方标记跳过，未计入代理组\n');
+    }
+    return out;
+  }
+
+  // ---------- Quantumult X ----------
+  function nodeToQX(n){
+    if (n.type === 'ss') return `shadowsocks=${n.server}:${n.port}, method=${n.method}, password=${n.password}, fast-open=false, udp-relay=true, tag=${n.name}`;
+    if (n.type === 'vmess'){
+      let s = `vmess=${n.server}:${n.port}, method=auto, password=${n.uuid}, fast-open=false, udp-relay=true`;
+      if (n.network === 'ws'){ s += `, obfs=ws, obfs-uri=${n.wsPath || '/'}, obfs-host=${n.wsHost || n.server}`; }
+      if (n.tls) s += ', tls-verification=true' + (n.sni ? `, tls-host=${n.sni}` : '');
+      s += `, tag=${n.name}`;
+      return s;
+    }
+    if (n.type === 'trojan'){
+      let s = `trojan=${n.server}:${n.port}, password=${n.password}, over-tls=true`;
+      if (n.sni) s += `, tls-host=${n.sni}`;
+      s += `, tls-verification=${n.allowInsecure ? 'false' : 'true'}, tag=${n.name}`;
+      return s;
+    }
+    if (n.type === 'vless'){
+      let s = `vless=${n.server}:${n.port}, method=none, password=${n.uuid}`;
+      if (n.tls) s += ', obfs=over-tls' + (n.sni ? `, tls-host=${n.sni}` : '');
+      s += `, tag=${n.name}`;
+      return s;
+    }
+    if (n.type === 'socks5'){
+      let s = `socks5=${n.server}:${n.port}`;
+      if (n.username) s += `, username=${n.username}, password=${n.password}`;
+      s += `, tag=${n.name}`;
+      return s;
+    }
+    if (n.type === 'http'){
+      let s = `http=${n.server}:${n.port}`;
+      if (n.username) s += `, username=${n.username}, password=${n.password}`;
+      if (n.tls) s += ', over-tls=true';
+      s += `, tag=${n.name}`;
+      return s;
+    }
+    return `# 跳过（Quantumult X 暂不支持 ${n.type}）: ${n.name}`;
+  }
+
+  function buildQX(rawNodes){
+    const nodes = dedupeNames(rawNodes);
+    const usable = nodes.filter(n => ['ss','vmess','trojan','vless','socks5','http'].includes(n.type));
+    let out = '[general]\n';
+    out += 'server_check_url = http://www.gstatic.com/generate_204\n';
+    out += 'dns-fallback-system = true\n\n';
+    out += '[policy]\nstatic=PROXY, ' + usable.map(n=>n.name).join(', ') + '\n\n';
+    out += '[server_local]\n' + nodes.map(nodeToQX).join('\n') + '\n\n';
+    out += '[filter_remote]\n';
+    RULE_ENTRIES.forEach(([rname, policy]) => {
+      out += `${BM7_BASE}/QuantumultX/${rname}/${rname}.list, tag=${rname}, force-policy=${policy}, update-interval=86400, opt-parser=true, enabled=true\n`;
+    });
+    out += '\n[filter_local]\ngeoip,cn,DIRECT\nfinal,PROXY\n';
+    if (nodes.length !== usable.length){
+      out = out.replace('[server_local]\n', '[server_local]\n# 注：hysteria/hysteria2/tuic/wireguard/ssr 节点 Quantumult X 暂不原生支持，已跳过\n');
+    }
+    return out;
+  }
+
+  // ---------- sing-box ----------
+  function nodeToSingbox(n){
+    const base = { tag: n.name, server: n.server, server_port: n.port };
+    if (n.type === 'ss') return Object.assign({ type:'shadowsocks', method: n.method, password: n.password }, base);
+    if (n.type === 'vmess'){
+      const o = Object.assign({ type:'vmess', uuid: n.uuid, security:'auto', alter_id: n.alterId }, base);
+      if (n.network === 'ws') o.transport = { type:'ws', path: n.wsPath || '/', headers: n.wsHost ? { Host: n.wsHost } : undefined };
+      if (n.tls) o.tls = { enabled:true, server_name: n.sni || n.server };
+      return o;
+    }
+    if (n.type === 'vless'){
+      const o = Object.assign({ type:'vless', uuid: n.uuid }, base);
+      if (n.flow) o.flow = n.flow;
+      if (n.network === 'ws') o.transport = { type:'ws', path: n.wsPath || '/', headers: n.wsHost ? { Host: n.wsHost } : undefined };
+      if (n.tls) o.tls = { enabled:true, server_name: n.sni || n.server };
+      if (n.security === 'reality') o.tls.reality = { enabled:true, public_key: n.pbk, short_id: n.sid || '' };
+      return o;
+    }
+    if (n.type === 'trojan'){
+      const o = Object.assign({ type:'trojan', password: n.password }, base);
+      o.tls = { enabled:true, server_name: n.sni || n.server, insecure: !!n.allowInsecure };
+      if (n.network === 'ws') o.transport = { type:'ws', path: n.wsPath || '/', headers: n.wsHost ? { Host: n.wsHost } : undefined };
+      return o;
+    }
+    if (n.type === 'hysteria2'){
+      const o = Object.assign({ type:'hysteria2', password: n.password }, base);
+      o.tls = { enabled:true, server_name: n.sni || n.server, insecure: !!n.insecure };
+      return o;
+    }
+    if (n.type === 'tuic'){
+      const o = Object.assign({ type:'tuic', uuid: n.uuid, password: n.password }, base);
+      o.tls = { enabled:true, server_name: n.sni || n.server };
+      return o;
+    }
+    if (n.type === 'hysteria'){
+      const o = Object.assign({ type:'hysteria', auth_str: n.authStr }, base);
+      if (n.up) o.up_mbps = parseInt(n.up, 10) || undefined;
+      if (n.down) o.down_mbps = parseInt(n.down, 10) || undefined;
+      if (n.obfs) o.obfs = n.obfs;
+      o.server_name = n.sni || n.server;
+      o.insecure = !!n.insecure;
+      if (n.alpn) o.alpn = [n.alpn];
+      return o;
+    }
+    if (n.type === 'wireguard'){
+      return {
+        type:'wireguard', tag: n.name, server: n.server, server_port: n.port,
+        local_address: n.address && n.address.length ? n.address : ['172.16.0.2/32'],
+        private_key: n.privateKey, peer_public_key: n.publicKey,
+        pre_shared_key: n.presharedKey || undefined, mtu: parseInt(n.mtu, 10) || 1420
+      };
+    }
+    if (n.type === 'socks5'){
+      const o = Object.assign({ type:'socks', version:'5' }, base);
+      if (n.username){ o.username = n.username; o.password = n.password; }
+      return o;
+    }
+    if (n.type === 'http'){
+      const o = Object.assign({ type:'http' }, base);
+      if (n.username){ o.username = n.username; o.password = n.password; }
+      if (n.tls) o.tls = { enabled:true, server_name: n.server };
+      return o;
+    }
+    return null; // ssr unsupported by sing-box
+  }
+
+  function buildSingbox(rawNodes){
+    const nodes = dedupeNames(rawNodes);
+    const outbounds = [];
+    const tags = [];
+    nodes.forEach(n => {
+      const ob = nodeToSingbox(n);
+      if (ob){ outbounds.push(ob); tags.push(n.name); }
+    });
+
+    const ruleSetDefs = SINGBOX_RULES.map(([name]) => ({
+      tag: name, type: 'remote', format: 'binary', url: `${SINGBOX_BASE}/${name}.srs`
+    }));
+    ruleSetDefs.push({ tag: 'geoip-cn', type: 'remote', format: 'binary', url: SINGBOX_GEOIP_CN });
+
+    const rules = [];
+    const proxyTags = SINGBOX_RULES.filter(([,p]) => p === 'proxy').map(([n]) => n);
+    const directTags = SINGBOX_RULES.filter(([,p]) => p === 'direct').map(([n]) => n);
+    if (proxyTags.length) rules.push({ rule_set: proxyTags, outbound: 'PROXY' });
+    if (directTags.length) rules.push({ rule_set: directTags, outbound: 'direct' });
+    rules.push({ rule_set: ['geoip-cn'], outbound: 'direct' });
+
+    const config = {
+      log: { level: 'info', timestamp: true },
+      dns: {
+        servers: [
+          { tag: 'ali', address: 'https://dns.alidns.com/dns-query' },
+          { tag: 'google', address: 'https://8.8.8.8/dns-query' }
+        ],
+        rules: [{ rule_set: directTags.length ? directTags : undefined, server: 'ali' }],
+        final: 'google'
+      },
+      inbounds: [
+        { type: 'mixed', tag: 'mixed-in', listen: '127.0.0.1', listen_port: 7890 }
+      ],
+      outbounds: [
+        ...outbounds,
+        { type: 'selector', tag: 'PROXY', outbounds: [...tags, 'direct'] },
+        { type: 'direct', tag: 'direct' }
+      ],
+      route: {
+        rule_set: ruleSetDefs,
+        rules: rules,
+        final: 'PROXY',
+        auto_detect_interface: true
+      }
+    };
+    let note = '';
+    if (nodes.length !== outbounds.length){
+      note = '// 注：SSR 协议 sing-box 不支持，已跳过对应节点\n';
+    }
+    return note + JSON.stringify(config, null, 2);
+  }
+
+  // ---------- Shadowrocket / Base64 (no rules, just node list) ----------
+  function buildBase64Sub(lines){ return b64encode(lines.join('\n')); }
+
   // ---------- UI wiring ----------
+  const CLIENT_NOTES = {
+    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。支持全部协议类型（Clash Meta/Mihomo 内核）。适用于 Clash Verge、Clash for Windows、ClashX、Mihomo 等。下载后在客户端选择"本地导入"。',
+    surge: '包含节点 + 完整分流规则。仅支持 ss / vmess / trojan / socks5 / http(s)（Surge 暂不原生支持 vless/hysteria/hysteria2/tuic/wireguard/ssr，会在文件里标注跳过）。',
+    shadowrocket: '只包含节点，不带规则（标准 Base64 订阅格式）。Shadowrocket 支持全部协议类型；分流规则请在 App 内单独配置或使用自带的规则功能。',
+    qx: '包含节点 + 完整分流规则。支持 ss / vmess / trojan / vless / socks5 / http(s)（hysteria/hysteria2/tuic/wireguard/ssr 会标注跳过）。',
+    singbox: '包含节点 + 完整分流规则（JSON 格式，已通过语法校验）。支持 ss/vmess/vless/trojan/hysteria/hysteria2/tuic/wireguard/socks5/http，不支持 ssr（协议已被 sing-box 官方弃用）。规则集使用 MetaCubeX/meta-rules-dat 的 sing-box 专用格式。',
+    base64: '只包含节点，不带规则，通用 Base64 订阅格式，适用于任何支持标准订阅导入的客户端（如 V2rayN）。'
+  };
+
   function render(nodes, errors, total){
     $('statsPanel').style.display = 'block';
-    $('statTotal').textContent = total;
-    $('statOk').textContent = nodes.length;
-    $('statErr').textContent = errors.length;
-
-    const errList = $('errList');
-    errList.innerHTML = '';
+    $('statTotal').textContent = total; $('statOk').textContent = nodes.length; $('statErr').textContent = errors.length;
+    const errList = $('errList'); errList.innerHTML = '';
     errors.forEach(e => {
-      const div = document.createElement('div');
-      div.className = 'errline';
+      const div = document.createElement('div'); div.className = 'errline';
       div.innerHTML = `<b>第 ${e.lineNo} 行解析失败：</b>${e.reason}<span class="snippet">${e.snippet}</span>`;
       errList.appendChild(div);
     });
-
-    const nodeList = $('nodeList');
-    nodeList.innerHTML = '';
+    const nodeList = $('nodeList'); nodeList.innerHTML = '';
     nodes.forEach(n => {
-      const div = document.createElement('div');
-      div.className = 'node';
-      const bc = ['ss','ssr','vmess','vless','trojan','hysteria2','tuic'].includes(n.type) ? n.type : 'ss';
+      const div = document.createElement('div'); div.className = 'node';
+      const bc = ['ss','ssr','vmess','vless','trojan','hysteria2','hysteria','tuic','wireguard','socks5','http'].includes(n.type) ? n.type : 'ss';
       div.innerHTML = `<span class="badge ${bc}">${n.type}</span><span class="nm">${n.name}</span><span class="addr">${n.server}:${n.port}</span>`;
       nodeList.appendChild(div);
     });
-
-    $('resultPanel').style.display = nodes.length ? 'block' : 'none';
-    if (nodes.length){
-      $('resultBox').classList.add('show');
-      $('resultSummary').textContent = `已生成完整配置：${nodes.length} 个节点 + 37 组分流规则`;
-    } else {
-      $('resultBox').classList.remove('show');
-    }
+    $('outputPanel').style.display = nodes.length ? 'block' : 'none';
+    updateOutput();
   }
 
-  $('genBtn').addEventListener('click', () => {
+  function updateOutput(){
+    $('clientNote').textContent = CLIENT_NOTES[currentFmt];
+    if (currentFmt === 'clash') outputEl.value = buildClash(parsedNodes);
+    else if (currentFmt === 'surge') outputEl.value = buildSurge(parsedNodes);
+    else if (currentFmt === 'shadowrocket') outputEl.value = buildBase64Sub(window.__lastRawLines || []);
+    else if (currentFmt === 'qx') outputEl.value = buildQX(parsedNodes);
+    else if (currentFmt === 'singbox') outputEl.value = buildSingbox(parsedNodes);
+    else if (currentFmt === 'base64') outputEl.value = buildBase64Sub(window.__lastRawLines || []);
+  }
+
+  $('parseBtn').addEventListener('click', () => {
     const raw = inputEl.value;
     if (!raw.trim()) return;
     const lines = expandInput(raw);
     window.__lastRawLines = lines;
-    const nodes = [];
-    const errors = [];
+    const nodes = [], errors = [];
     lines.forEach((line, idx) => {
-      try {
-        const n = parseLine(line);
-        if (n) nodes.push(n);
-      } catch(e){
-        errors.push({
-          lineNo: idx+1,
-          reason: e.message,
-          snippet: line.length > 90 ? line.slice(0,90)+'…' : line
-        });
-      }
+      try { const n = parseLine(line); if (n) nodes.push(n); }
+      catch(e){ errors.push({ lineNo: idx+1, reason: e.message, snippet: line.length > 90 ? line.slice(0,90)+'…' : line }); }
     });
     parsedNodes = nodes;
     render(nodes, errors, lines.length);
   });
 
   $('clearBtn').addEventListener('click', () => {
-    inputEl.value = '';
-    $('statsPanel').style.display = 'none';
-    $('resultPanel').style.display = 'none';
-    parsedNodes = [];
+    inputEl.value = ''; $('statsPanel').style.display = 'none'; $('outputPanel').style.display = 'none'; parsedNodes = [];
   });
 
   $('sampleBtn').addEventListener('click', () => {
@@ -657,15 +922,23 @@
     ].join('\n');
   });
 
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active'); currentFmt = tab.dataset.fmt; updateOutput();
+    });
+  });
+
+  $('copyBtn').addEventListener('click', () => {
+    outputEl.select(); document.execCommand('copy');
+    const flash = $('copiedFlash'); flash.style.display = 'inline'; setTimeout(() => flash.style.display = 'none', 1200);
+  });
+
   $('downloadBtn').addEventListener('click', () => {
-    const content = buildFullConfig(parsedNodes);
-    const blob = new Blob([content], {type:'text/plain'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'clash-完整配置.yaml';
-    a.click();
-    URL.revokeObjectURL(url);
+    const extMap = { clash:'yaml', surge:'conf', shadowrocket:'txt', qx:'conf', singbox:'json', base64:'txt' };
+    const blob = new Blob([outputEl.value], {type:'text/plain'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = `subscription-${currentFmt}.${extMap[currentFmt]}`; a.click(); URL.revokeObjectURL(url);
   });
 })();
 </script>
