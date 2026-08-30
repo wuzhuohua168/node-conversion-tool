@@ -688,11 +688,14 @@
     const alpn = Array.isArray(alpnVal) ? alpnVal : (alpnVal ? String(alpnVal).split(',').map(s => s.trim()).filter(Boolean) : []);
     return {
       type:'tuic', name: name || resolveRemarkName(params) || (server+':'+port), server, port, tls: true,
-      uuid: auth.slice(0, sep), password: auth.slice(sep+1),
+      uuid: safeDecode(auth.slice(0, sep)), password: safeDecode(auth.slice(sep+1)),
       sni: resolveSni(params), alpn: alpn[0] || '',
       congestionController: params.congestion_control || params['congestion-controller'] || 'bbr',
       udpRelayMode: params.udp_relay_mode || params['udp-relay-mode'] || 'native',
-      allowInsecure: params.insecure === '1' || params.insecure === 'true' || params['skip-cert-verify'] === '1'
+      allowInsecure: params.allow_insecure === '1' || params.allow_insecure === 'true'
+        || params.allowInsecure === '1' || params.allowInsecure === 'true'
+        || params.insecure === '1' || params.insecure === 'true'
+        || params['skip-cert-verify'] === '1'
     };
   }
 
@@ -902,7 +905,10 @@
   function yamlStr(v){
     if (v === undefined || v === null || v === '') return '""';
     const s = String(v);
-    if (/[:#\[\]{}"'|>*&!%@`,\n]/.test(s) || /^\s|\s$/.test(s) || s === 'true' || s === 'false') return '"' + s.replace(/"/g,'\\"') + '"';
+    // 以 - ? : 开头（后面跟空格或到字符串末尾）在 YAML 里是保留的块级序列/映射/标签指示符，
+    // 必须加引号，否则像备注名恰好是纯 "-" 这种会被解析成非法的块序列项
+    if (/[:#\[\]{}"'|>*&!%@`,\n]/.test(s) || /^\s|\s$/.test(s) || s === 'true' || s === 'false'
+        || /^[-?:](\s|$)/.test(s)) return '"' + s.replace(/"/g,'\\"') + '"';
     return s;
   }
   function addrToCidr(a){
@@ -974,7 +980,8 @@
       lines.push(`    protocol: udp`);
     } else if (n.type === 'tuic'){
       lines.push(`    uuid: ${yamlStr(n.uuid)}`); lines.push(`    password: ${yamlStr(n.password)}`);
-      if (n.sni){ lines.push(`    sni: ${yamlStr(n.sni)}`); lines.push(`    servername: ${yamlStr(n.sni)}`); }
+      // 注意：Mihomo 官方 tuic schema 只有 sni 字段，没有 servername（那是 vmess/trojan 专属字段，混进来会被当成未知字段）
+      if (n.sni) lines.push(`    sni: ${yamlStr(n.sni)}`);
       if (n.alpn){
         // TUIC alpn 推荐是数组，字符串也可；写为 ["h3"] 这种标准形式
         const arr = Array.isArray(n.alpn) ? n.alpn : String(n.alpn).split(',').map(s=>s.trim()).filter(Boolean);
@@ -1468,7 +1475,7 @@
         if (n.alpn) q.set('alpn', n.alpn);
         if (n.congestionController) q.set('congestion_control', n.congestionController);
         if (n.udpRelayMode) q.set('udp_relay_mode', n.udpRelayMode);
-        if (n.allowInsecure) q.set('insecure', '1');
+        if (n.allowInsecure) q.set('allow_insecure', '1');
         const qs = q.toString();
         return `tuic://${enc(n.uuid)}:${enc(n.password)}@${n.server}:${n.port}${qs?('?'+qs):''}#${enc(n.name)}`;
       }
@@ -1522,7 +1529,7 @@
 
   // ---------- UI wiring ----------
   const CLIENT_NOTES = {
-    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。支持全部协议类型（Clash Meta/Mihomo 内核，已启用 unified-delay / tcp-concurrent / global-client-fingerprint）。适用于 Clash Verge Rev、Mihomo Party、ClashX、FlClash 等。如果导入后部分节点连不上，先看顶部诊断面板；若是自签证书/私有 SNI，请在节点参数里手动调节 skip-cert-verify。',
+    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。支持全部协议类型，但前提是 Clash.Meta / Mihomo 内核（Clash Verge Rev、Mihomo Party、FlClash、ClashX Meta 等）。注意：普通 ClashX（原版 Clash 内核，非 Meta 版）不支持 TUIC / Hysteria2 / VLESS / WireGuard，节点会直接无法识别——如果你在 Mac 上用的是 ClashX 而不是 ClashX Meta，请换成 Clash Verge Rev 或 ClashX Meta。如果导入后部分节点连不上，先看顶部诊断面板；若是自签证书/私有 SNI，请在节点参数里手动调节 skip-cert-verify。',
     surge: '包含节点 + 完整分流规则。仅支持 ss / vmess / trojan / socks5 / http(s)（Surge 暂不原生支持 vless/hysteria/hysteria2/tuic/wireguard/ssr，会在文件里标注跳过，未计入代理组）。导入失败时请优先使用 Clash / sing-box 版本。',
     shadowrocket: '只包含节点（从标准字段重新生成 URI，再 Base64 打包）。Shadowrocket 支持全部协议类型；若个别节点导入失败，通常是 Reality / TUIC 字段不兼容，可切换到 Clash 配置或 Base64 版本对比。分流规则请在 App 内单独配置。',
     qx: '包含节点 + 完整分流规则。支持 ss / vmess / trojan / vless / socks5 / http(s)（hysteria/hysteria2/tuic/wireguard/ssr 会标注跳过）。tag 已自动把逗号/等号替换为下划线，避免 Quantumult X 解析失败。',
