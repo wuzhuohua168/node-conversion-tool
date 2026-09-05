@@ -529,7 +529,11 @@
       network: resolveNetwork(params), tls, security,
       sni: resolveSni(params), flow: params.flow || '',
       wsPath: normalizePath(params.path), wsHost: resolveHost(params),
-      pbk: params.pbk || '', sid: params.sid || ''
+      pbk: params.pbk || '', sid: params.sid || '',
+      // fp = uTLS 指纹伪装（v2rayN/NekoBox/Xray 生成的 Reality 链接通常都带这个参数）。
+      // Mihomo 官方文档明确标注 Reality+Vision 场景下 client-fingerprint "不能为空"，
+      // 之前完全没读取这个参数，节点里也没写这一行，只能靠全局兜底，节点单独导出时会漏掉。
+      fp: params.fp || params.fingerprint || ''
     };
   }
 
@@ -958,6 +962,11 @@
         lines.push(`      public-key: ${yamlStr(n.pbk)}`);
         lines.push(`      short-id: ${yamlStr(n.sid || '')}`);
       }
+      // client-fingerprint：Reality 或者带 flow（如 xtls-rprx-vision）时 Mihomo 要求必填，
+      // 不填这个字段官方文档标注会直接报错。优先用链接里的 fp 参数，没有则兜底用 chrome。
+      if (n.security === 'reality' || n.flow || n.fp){
+        lines.push(`    client-fingerprint: ${yamlStr(n.fp || 'chrome')}`);
+      }
       lines.push(`    udp: true`);
     } else if (n.type === 'trojan'){
       lines.push(`    password: ${yamlStr(n.password)}`);
@@ -1247,7 +1256,7 @@
       }
       const needTls = n.tls || n.security === 'reality' || !!n.sni || !!n.flow || !!n.pbk;
       if (needTls){
-        o.tls = { enabled:true, server_name: n.sni || n.server, utls: { enabled: true, fingerprint: 'chrome' } };
+        o.tls = { enabled:true, server_name: n.sni || n.server, utls: { enabled: true, fingerprint: n.fp || 'chrome' } };
         if (n.security === 'reality') o.tls.reality = { enabled:true, public_key: n.pbk, short_id: n.sid || '' };
       }
       return cleanObj(o);
@@ -1446,6 +1455,7 @@
           if (n.pbk) q.set('pbk', n.pbk);
           if (n.sid) q.set('sid', n.sid);
         }
+        if (n.fp) q.set('fp', n.fp);
         const qs = q.toString();
         return `vless://${n.uuid}@${n.server}:${n.port}${qs?('?'+qs):''}#${enc(n.name)}`;
       }
