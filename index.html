@@ -521,15 +521,24 @@
     if (!auth) throw new Error('VLESS 节点缺少 UUID');
     const sep = auth.indexOf(':');
     const uuid = sep >= 0 ? auth.slice(sep+1) : auth;
-    const security = params.security || '';
+    const pbk = params.pbk || '';
+    const sid = params.sid || '';
+    // security 参数不是所有生成器都会写。Shadowrocket 这类客户端导出的链接经常只给
+    // tls=1 + pbk + sid，不带显式的 security=reality —— 只要有 pbk（Reality 公钥）就
+    // 必须当成 reality 节点处理，否则 reality-opts 会整块丢失，节点等于没启用 Reality。
+    const security = params.security || (pbk ? 'reality' : '');
     // Reality 必须开启 TLS（VLESS Reality = tls + reality 子对象）
     const tls = security === 'reality' ? true : resolveTls(params);
+    // flow 同理：Shadowrocket 用数字编码的 xtls= 参数代替标准的 flow= 参数。
+    // 2023 年 v1.8.0 起 xtls-rprx-origin/direct 已从 Xray-core 移除，现在只剩 vision
+    // 一种存活的 flow 模式，所以只要 xtls 非 0 且没有显式 flow，就按 vision 处理。
+    const flow = params.flow || (params.xtls && params.xtls !== '0' ? 'xtls-rprx-vision' : '');
     return {
       type:'vless', name: name || resolveRemarkName(params) || (server+':'+port), server, port, uuid,
       network: resolveNetwork(params), tls, security,
-      sni: resolveSni(params), flow: params.flow || '',
+      sni: resolveSni(params), flow,
       wsPath: normalizePath(params.path), wsHost: resolveHost(params),
-      pbk: params.pbk || '', sid: params.sid || '',
+      pbk, sid,
       // fp = uTLS 指纹伪装（v2rayN/NekoBox/Xray 生成的 Reality 链接通常都带这个参数）。
       // Mihomo 官方文档明确标注 Reality+Vision 场景下 client-fingerprint "不能为空"，
       // 之前完全没读取这个参数，节点里也没写这一行，只能靠全局兜底，节点单独导出时会漏掉。
