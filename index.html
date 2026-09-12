@@ -1071,7 +1071,64 @@
     out += '# 生成器：多客户端订阅转换器（本地解析，隐私安全）\n\n';
     out += 'mixed-port: 7890\nallow-lan: false\nmode: rule\nlog-level: info\nipv6: false\n';
     out += 'unified-delay: true\ntcp-concurrent: true\nglobal-client-fingerprint: chrome\n\n';
-    out += 'dns:\n  enable: true\n  ipv6: false\n  default-nameserver: [223.5.5.5, 119.29.29.29]\n  nameserver: [\'223.5.5.5\', \'119.29.29.29\']\n  fallback: [\'https://dns.cloudflare.com/dns-query\', \'https://dns.google/dns-query\']\n  fallback-filter:\n    geoip: true\n    geoip-code: CN\n\n';
+    // ---- 抗 DNS 污染的 dns 段（针对本机网络实测：Cloudflare/Google DoH 被阻断，Quad9 是唯一干净源）----
+    // 关键设计：
+    //  respect-rules: false —— 防止"代理未就绪时先走代理解析"死锁。
+    //  proxy-server-nameserver / direct-nameserver —— 节点域名与直连域名强制走 Quad9#DIRECT 干净解析，避免污染 IP 导致握手失败。
+    //  fallback 走 Quad9 DoH/DoT #PROXY —— 国外域名拿到境外出口解析，配合 fallback-filter(geoip CN + 常见被污染域)触发。
+    //  fake-ip-filter 放行 *.apple.com / ocsp.apple.com / 国内 AI 域名 —— 用真实 IP，直接解决 9/11 记录的
+    //    "运营商 DNS 劫持 ocsp.apple.com → iOS 证书信任闪退"（Mac 侧 AltStore anisette 同受益）。
+    const dnsLines = [
+      'dns:',
+      '  enable: true',
+      '  ipv6: false',
+      '  listen: 0.0.0.0:1053',
+      '  use-hosts: true',
+      '  respect-rules: false',
+      '  default-nameserver: [223.5.5.5, 119.29.29.29]',
+      '  proxy-server-nameserver:',
+      "    - 'https://dns.quad9.net/dns-query#DIRECT'",
+      '    - 223.5.5.5',
+      '  direct-nameserver:',
+      "    - 'https://dns.quad9.net/dns-query#DIRECT'",
+      '    - 223.5.5.5',
+      '    - 119.29.29.29',
+      '  enhanced-mode: fake-ip',
+      '  fake-ip-range: 198.18.0.1/16',
+      '  fake-ip-filter:',
+      "    - '*.lan'",
+      "    - '*.local'",
+      "    - '*.localhost'",
+      "    - '+.msftconnecttest.com'",
+      "    - '+.msftncsi.com'",
+      "    - 'stun.*'",
+      "    - '+.apple.com'",
+      "    - '+.icloud.com'",
+      "    - '+.mzstatic.com'",
+      "    - 'ocsp.apple.com'",
+      "    - '+.traework.cn'",
+      "    - '+.trae.cn'",
+      "    - '+.workbuddy.cn'",
+      "  nameserver: ['223.5.5.5', '119.29.29.29', 'https://dns.quad9.net/dns-query#DIRECT']",
+      '  fallback:',
+      "    - 'https://dns.quad9.net/dns-query#PROXY'",
+      "    - 'tls://9.9.9.9:853#PROXY'",
+      "    - 'https://dns.google/resolve#PROXY'",
+      '  fallback-filter:',
+      '    geoip: true',
+      '    geoip-code: CN',
+      '    domain:',
+      "      - '+.google.com'",
+      "      - '+.googleapis.com'",
+      "      - '+.gstatic.com'",
+      "      - '+.github.com'",
+      "      - '+.githubusercontent.com'",
+      "      - '+.openai.com'",
+      "      - '+.youtube.com'",
+      "      - '+.googlevideo.com'",
+      ''
+    ];
+    out += dnsLines.join('\n');
     out += 'proxies:\n' + nodes.map(nodeToClash).join('\n') + '\n\n';
     out += 'proxy-groups:\n  - name: PROXY\n    type: select\n    proxies: [' + names.join(', ') + ', 自动选择, DIRECT]\n';
     out += '  - name: 自动选择\n    type: url-test\n    proxies: [' + names.join(', ') + ']\n    url: http://www.gstatic.com/generate_204\n    interval: 300\n\n';
@@ -1383,14 +1440,20 @@
     if (directTags.length) rules.push(cleanObj({ rule_set: directTags, outbound: 'direct' }));
     rules.push(cleanObj({ rule_set: ['geoip-cn'], outbound: 'direct' }));
 
-    const dnsRules = directTags.length ? [ cleanObj({ rule_set: directTags, server: 'ali' }) ] : [];
+    // 抗污染 dns：直连域名走 alidns；Apple 域名走 Quad9 DoT(DIRECT)拿真实 IP（解决 ocsp.apple.com 劫持）；
+    // 其余最终走 Quad9 DoT(PROXY) 境外出口解析。
+    const dnsRules = [
+      cleanObj({ domain_suffix: ['apple.com', 'icloud.com', 'mzstatic.com'], server: 'quad9_direct' }),
+      ...(directTags.length ? [ cleanObj({ rule_set: directTags, server: 'ali' }) ] : [])
+    ];
 
     const config = {
       log: { level: 'info', timestamp: true, disabled: false },
       dns: cleanObj({
         servers: [
           { tag: 'ali', address: 'https://dns.alidns.com/dns-query', detour: 'direct' },
-          { tag: 'google', address: 'https://8.8.8.8/dns-query', detour: 'PROXY' }
+          { tag: 'quad9_direct', address: 'tls://9.9.9.9:853', detour: 'direct' },
+          { tag: 'google', address: 'tls://9.9.9.9:853', detour: 'PROXY' }
         ],
         rules: dnsRules,
         final: 'google',
