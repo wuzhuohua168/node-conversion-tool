@@ -902,11 +902,25 @@
   ];
   const BM7_BASE = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule";
 
-  // Apple 认证域名内联直连规则（不依赖远程 rule-set，优先级最高）。
-  // 解决问题：远程规则集下载失败时，MATCH 兜底会把 gsa.apple.com 等 anisette
-  // 认证请求也走代理，导致 AltServer/Sideloadly 等侧载工具报
-  // "The data couldn't be read because it isn't in the correct format"。
+  // 内联直连白名单：放在 GEOIP/MATCH 兜底之前，优先级最高，不依赖远程 rule-set。
+  // 两类场景：
+  //  1) Apple 认证域名：远程规则集没下载好时，MATCH 兜底会把 gsa.apple.com 等 anisette
+  //     请求也走代理，导致 AltServer/Sideloadly 等侧载工具报
+  //     "The data couldn't be read because it isn't in the correct format"。
+  //  2) 国内 AI 工具域名：traework.cn / workbuddy.cn 是国内服务，客户端到它们的请求被代理
+  //     走境外节点会延迟飙升甚至卡死（典型：自定义模型一直转圈 / Empty response / errCode -1）。
+  //     连同这些产品可能调用的国内模型 API 域名一起直连，避免被误代理。
   const APPLE_DIRECT_DOMAINS = ["apple.com", "icloud.com", "mzstatic.com", "apple-dns.net"];
+  const DOMESTIC_AI_DIRECT_DOMAINS = [
+    "traework.cn", "workbuddy.cn",
+    "ark.cn-beijing.volces.com", "console.volcengine.com",
+    "api.deepseek.com", "platform.deepseek.com",
+    "dashscope.aliyuncs.com", "api.aliyun.com",
+    "open.bigmodel.cn", "openai.aliyun.com",
+    "api.moonshot.cn", "api.siliconflow.cn"
+  ];
+  // 所有客户端格式 rules 段统一注入这个合并数组
+  const INLINE_DIRECT_DOMAINS = [...APPLE_DIRECT_DOMAINS, ...DOMESTIC_AI_DIRECT_DOMAINS];
 
   const SINGBOX_RULES = [
     ["youtube","proxy"],["netflix","proxy"],["disney","proxy"],["hbo","proxy"],["spotify","proxy"],["telegram","proxy"],
@@ -1068,7 +1082,7 @@
     });
     out += '\nrules:\n';
     RULE_ENTRIES.forEach(([rname, policy]) => { out += `  - RULE-SET,${rname},${policy}\n`; });
-    APPLE_DIRECT_DOMAINS.forEach(d => { out += `  - DOMAIN-SUFFIX,${d},DIRECT\n`; });
+    INLINE_DIRECT_DOMAINS.forEach(d => { out += `  - DOMAIN-SUFFIX,${d},DIRECT\n`; });
     out += '  - GEOIP,CN,DIRECT\n  - MATCH,PROXY\n';
     return out;
   }
@@ -1126,9 +1140,8 @@
     RULE_ENTRIES.forEach(([rname, policy]) => {
       out += `RULE-SET,${BM7_BASE}/Surge/${rname}/${rname}.list,${policy}\n`;
     });
-    out += 'GEOIP,CN,DIRECT\n';
-    APPLE_DIRECT_DOMAINS.forEach(d => { out += `DOMAIN-SUFFIX,${d},DIRECT\n`; });
-    out += 'FINAL,PROXY\n';
+    INLINE_DIRECT_DOMAINS.forEach(d => { out += `DOMAIN-SUFFIX,${d},DIRECT\n`; });
+    out += 'GEOIP,CN,DIRECT\nFINAL,PROXY\n';
     if (nodes.length !== usable.length){
       out = out.replace('[Proxy]\n', '[Proxy]\n# 注：vless/hysteria/hysteria2/tuic/wireguard/ssr 节点 Surge 暂不原生支持，已在下方标记跳过，未计入代理组\n');
     }
@@ -1216,7 +1229,7 @@
       out += `${BM7_BASE}/QuantumultX/${rname}/${rname}.list, tag=${rname}, force-policy=${policy}, update-interval=86400, opt-parser=true, enabled=true\n`;
     });
     out += '\n[filter_local]\n';
-    APPLE_DIRECT_DOMAINS.forEach(d => { out += `host-suffix,${d},DIRECT\n`; });
+    INLINE_DIRECT_DOMAINS.forEach(d => { out += `host-suffix,${d},DIRECT\n`; });
     out += 'geoip,cn,DIRECT\nfinal,PROXY\n';
     if (nodes.length !== usable.length){
       out = out.replace('[server_local]\n', '[server_local]\n# 注：hysteria/hysteria2/tuic/wireguard/ssr 节点 Quantumult X 暂不原生支持，已跳过\n');
@@ -1363,12 +1376,13 @@
     }));
 
     const rules = [];
+    // 内联直连白名单：优先级最高，放在远程规则集之前（与 Clash/Surge/QX 保持一致）
+    rules.push(cleanObj({ domain_suffix: INLINE_DIRECT_DOMAINS, outbound: 'direct' }));
     const proxyTags = SINGBOX_RULES.filter(([,p]) => p === 'proxy').map(([n]) => n);
     const directTags = SINGBOX_RULES.filter(([,p]) => p === 'direct').map(([n]) => n);
     if (proxyTags.length) rules.push(cleanObj({ rule_set: proxyTags, outbound: 'PROXY' }));
     if (directTags.length) rules.push(cleanObj({ rule_set: directTags, outbound: 'direct' }));
     rules.push(cleanObj({ rule_set: ['geoip-cn'], outbound: 'direct' }));
-    rules.push(cleanObj({ domain_suffix: APPLE_DIRECT_DOMAINS, outbound: 'direct' }));
 
     const dnsRules = directTags.length ? [ cleanObj({ rule_set: directTags, server: 'ali' }) ] : [];
 
@@ -1560,7 +1574,7 @@
 
   // ---------- UI wiring ----------
   const CLIENT_NOTES = {
-    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底，并内置 Apple 认证域名 apple.com/icloud.com/mzstatic.com 直连白名单，防止 AltServer/Sideloadly 侧载签名被代理干扰）。支持全部协议类型，但前提是 Clash.Meta / Mihomo 内核（Clash Verge Rev、Mihomo Party、FlClash、ClashX Meta 等）。注意：普通 ClashX（原版 Clash 内核，非 Meta 版）不支持 TUIC / Hysteria2 / VLESS / WireGuard，节点会直接无法识别——如果你在 Mac 上用的是 ClashX 而不是 ClashX Meta，请换成 Clash Verge Rev 或 ClashX Meta。如果导入后部分节点连不上，先看顶部诊断面板；若是自签证书/私有 SNI，请在节点参数里手动调节 skip-cert-verify。',
+    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。并内置两段内联直连白名单（优先级最高，位于 GEOIP/MATCH 之前）：① Apple 认证域名 apple.com/icloud.com/mzstatic.com，防止 AltServer/Sideloadly 侧载签名被代理干扰报 “The data couldn't be read...”；② 国内 AI 工具域名 traework.cn/workbuddy.cn 及其常用国内模型 API（火山/阿里/DeepSeek/智谱/月之暗面/硅基流动等），防止自定义模型/AI 工具到国内服务器的请求被误代理而卡死。支持全部协议类型，但前提是 Clash.Meta / Mihomo 内核（Clash Verge Rev、Mihomo Party、FlClash、ClashX Meta 等）。注意：普通 ClashX（原版 Clash 内核，非 Meta 版）不支持 TUIC / Hysteria2 / VLESS / WireGuard，节点会直接无法识别——如果你在 Mac 上用的是 ClashX 而不是 ClashX Meta，请换成 Clash Verge Rev 或 ClashX Meta。如果导入后部分节点连不上，先看顶部诊断面板；若是自签证书/私有 SNI，请在节点参数里手动调节 skip-cert-verify。',
     surge: '包含节点 + 完整分流规则。仅支持 ss / vmess / trojan / socks5 / http(s)（Surge 暂不原生支持 vless/hysteria/hysteria2/tuic/wireguard/ssr，会在文件里标注跳过，未计入代理组）。导入失败时请优先使用 Clash / sing-box 版本。',
     shadowrocket: '只包含节点（从标准字段重新生成 URI，再 Base64 打包）。Shadowrocket 支持全部协议类型；若个别节点导入失败，通常是 Reality / TUIC 字段不兼容，可切换到 Clash 配置或 Base64 版本对比。分流规则请在 App 内单独配置。',
     qx: '包含节点 + 完整分流规则。支持 ss / vmess / trojan / vless / socks5 / http(s)（hysteria/hysteria2/tuic/wireguard/ssr 会标注跳过）。tag 已自动把逗号/等号替换为下划线，避免 Quantumult X 解析失败。',
