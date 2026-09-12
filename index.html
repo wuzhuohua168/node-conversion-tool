@@ -911,13 +911,12 @@
   //     走境外节点会延迟飙升甚至卡死（典型：自定义模型一直转圈 / Empty response / errCode -1）。
   //     连同这些产品可能调用的国内模型 API 域名一起直连，避免被误代理。
   const APPLE_DIRECT_DOMAINS = ["apple.com", "icloud.com", "mzstatic.com", "apple-dns.net"];
+  // 用父域名后缀写法：DOMAIN-SUFFIX 会自动覆盖该域名的所有子域名。
   const DOMESTIC_AI_DIRECT_DOMAINS = [
-    "traework.cn", "workbuddy.cn",
-    "ark.cn-beijing.volces.com", "console.volcengine.com",
-    "api.deepseek.com", "platform.deepseek.com",
-    "dashscope.aliyuncs.com", "api.aliyun.com",
-    "open.bigmodel.cn", "openai.aliyun.com",
-    "api.moonshot.cn", "api.siliconflow.cn"
+    "traework.cn", "trae.cn", "workbuddy.cn",
+    "volces.com", "volcengine.com",
+    "deepseek.com", "dashscope.aliyuncs.com",
+    "bigmodel.cn", "moonshot.cn", "siliconflow.cn"
   ];
   // 所有客户端格式 rules 段统一注入这个合并数组
   const INLINE_DIRECT_DOMAINS = [...APPLE_DIRECT_DOMAINS, ...DOMESTIC_AI_DIRECT_DOMAINS];
