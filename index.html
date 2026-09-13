@@ -56,6 +56,8 @@
   .modebar{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
   .modebtn{font-family:var(--mono); font-size:12px; padding:8px 13px; border-radius:8px; border:1px solid var(--line); background:var(--bg-panel-2); color:var(--text-dim); cursor:pointer;}
   .modebtn.active{border-color:var(--accent-2); color:#fff; background:#171f35;}
+  .modebtn.lb{margin-left:auto; order:99;}
+  .modebtn.lb.active{border-color:var(--accent); color:var(--accent); background:#132420;}
   .tab .warnicon{color:var(--warn,#ffb454); font-size:11px;}
   .clientnote{font-family:var(--mono); font-size:11.5px; color:var(--text-dim); background:var(--bg-panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:12px; line-height:1.7;}
   .clientnote b{color:var(--text);}
@@ -114,6 +116,7 @@
     <div class="modebar" aria-label="输出内容">
       <button class="modebtn active" type="button" data-mode="rules">节点 + 规则</button>
       <button class="modebtn" type="button" data-mode="nodes">仅节点</button>
+      <button class="modebtn lb" type="button" data-lb="on" title="开启后把并发连接分摊到多个节点（轮询），适合聚合了大量节点做多线程下载；会暴露真实源 IP，可能破坏登录态/Apple 认证">⚖ 负载均衡：关</button>
     </div>
     <div class="clientnote" id="clientNote"></div>
     <textarea id="output" readonly style="min-height:300px;"></textarea>
@@ -137,6 +140,7 @@
   let parsedNodes = [];
   let currentFmt = 'clash';
   let outputMode = 'rules';
+  let loadBalance = false; // 节点负载均衡开关（轮询分摊连接）。默认关闭：url-test 取最低延迟已最优，且避免轮询换 IP 破坏登录态/Apple 认证
   const warnings = []; // 诊断提示：保留到 render 阶段展示
 
   // ---------- base64 helpers ----------
@@ -1138,8 +1142,12 @@
     out += dnsLines.join('\n');
     out += 'proxies:\n' + nodes.map(nodeToClash).join('\n') + '\n\n';
     out += 'proxy-groups:\n  - name: PROXY\n    type: select\n    proxies: [' + names.join(', ') + ', 自动选择, DIRECT]\n';
-    out += '  - name: 自动选择\n    type: url-test\n    proxies: [' + names.join(', ') + ']\n    url: http://www.gstatic.com/generate_204\n    interval: 300\n\n';
-    out += 'rule-providers:\n';
+    if (loadBalance && names.length > 1){
+      out += '  - name: 自动选择\n    type: load-balance\n    strategy: round-robin\n    proxies: [' + names.join(', ') + ']\n';
+    } else {
+      out += '  - name: 自动选择\n    type: url-test\n    proxies: [' + names.join(', ') + ']\n    url: http://www.gstatic.com/generate_204\n    interval: 300\n';
+    }
+    out += '\nrule-providers:\n';
     RULE_ENTRIES.forEach(([rname]) => {
       out += `  ${rname}:\n    type: http\n    behavior: classical\n    url: "${BM7_BASE}/Clash/${rname}/${rname}.yaml"\n    path: ./rule-providers/${rname}.yaml\n    interval: 86400\n`;
     });
@@ -1199,7 +1207,7 @@
     out += '# 提示：若某节点在 Surge 中仍报 invalid，多半是协议不支持，已在文件开头/跳过行标注；请优先使用 Clash 版本。\n\n';
     out += '[General]\nloglevel = notify\ninternet-test-url = http://www.gstatic.com/generate_204\nipv6 = false\n\n';
     out += '[Proxy]\n' + nodes.map(nodeToSurge).join('\n') + '\n\n';
-    out += '[Proxy Group]\nPROXY = select, ' + (usable.length ? usable.map(n=>n.name).join(', ') : 'direct') + '\n\n';
+    out += '[Proxy Group]\nPROXY = ' + (loadBalance && usable.length > 1 ? 'url-latency-basis, ' + usable.map(n=>n.name).join(', ') : 'select, ' + (usable.length ? usable.map(n=>n.name).join(', ') : 'direct')) + '\n\n';
     out += '[Rule]\n';
     RULE_ENTRIES.forEach(([rname, policy]) => {
       out += `RULE-SET,${BM7_BASE}/Surge/${rname}/${rname}.list,${policy}\n`;
@@ -1476,8 +1484,11 @@
       ],
       outbounds: cleanObj([
         ...outbounds,
-        tags.length ? { type: 'selector', tag: 'PROXY', outbounds: [...tags, 'url-test', 'direct'] } : null,
-        tags.length ? cleanObj({ type: 'urltest', tag: 'url-test', outbounds: tags, url: 'http://www.gstatic.com/generate_204', interval: '5m', tolerance: 50 }) : null,
+        tags.length ? { type: 'selector', tag: 'PROXY', outbounds: [...tags, '自动选择', 'direct'] } : null,
+        tags.length ? (loadBalance
+          ? cleanObj({ type: 'load_balance', tag: '自动选择', strategy: 'round-robin', outbounds: tags, url: 'http://www.gstatic.com/generate_204', interval: '5m', tolerance: 50 })
+          : cleanObj({ type: 'urltest', tag: '自动选择', outbounds: tags, url: 'http://www.gstatic.com/generate_204', interval: '5m', tolerance: 50 })
+        ) : null,
         { type: 'direct', tag: 'direct' },
         { type: 'block', tag: 'block' }
       ].filter(Boolean)),
@@ -1648,11 +1659,11 @@
 
   // ---------- UI wiring ----------
   const CLIENT_NOTES = {
-    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。并内置三段内联规则（位于 GEOIP/MATCH 之前）：① bestvirtualgoods.com 作为国内 AI 直连白名单（2026-09-13 实测直连可达 Cloudflare 边缘，走代理反而 000 失败；详见 RULES.md）；② 国内 AI 工具域名 traework.cn/workbuddy.cn 及常用国内模型 API（火山/阿里/DeepSeek/智谱/月之暗面/硅基流动等）DIRECT；③ Apple 认证域名 apple.com/icloud.com/mzstatic.com DIRECT，防止 AltServer/Sideloadly 侧载签名被代理干扰报 “The data couldn\'t be read...” 或 iOS 证书信任闪退。支持全部协议类型，但前提是 Clash.Meta / Mihomo 内核（Clash Verge Rev、Mihomo Party、FlClash、ClashX Meta 等）。注意：普通 ClashX（原版 Clash 内核，非 Meta 版）不支持 TUIC / Hysteria2 / VLESS / WireGuard，节点会直接无法识别——如果你在 Mac 上用的是 ClashX 而不是 ClashX Meta，请换成 Clash Verge Rev 或 ClashX Meta。如果导入后部分节点连不上，先看顶部诊断面板；若是自签证书/私有 SNI，请在节点参数里手动调节 skip-cert-verify。',
+    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。并内置三段内联规则（位于 GEOIP/MATCH 之前）：① bestvirtualgoods.com 作为国内 AI 直连白名单（2026-09-13 实测直连可达 Cloudflare 边缘，走代理反而 000 失败；详见 RULES.md）；② 国内 AI 工具域名 traework.cn/workbuddy.cn 及常用国内模型 API（火山/阿里/DeepSeek/智谱/月之暗面/硅基流动等）DIRECT；③ Apple 认证域名 apple.com/icloud.com/mzstatic.com DIRECT，防止 AltServer/Sideloadly 侧载签名被代理干扰报 “The data couldn\'t be read...” 或 iOS 证书信任闪退。支持全部协议类型，但前提是 Clash.Meta / Mihomo 内核（Clash Verge Rev、Mihomo Party、FlClash、ClashX Meta 等）。默认「自动选择」为 url-test 取最低延迟节点；点右上角「⚖ 负载均衡」可切换为 load-balance 轮询（适合聚合大量节点做多线程下载，但会暴露真实源 IP，可能破坏登录态/Apple 认证）。普通 ClashX（原版内核）不支持 TUIC / Hysteria2 / VLESS / WireGuard，请用 Clash Verge Rev 等 Meta 版。',
     surge: '包含节点 + 完整分流规则。仅支持 ss / vmess / trojan / socks5 / http(s)（Surge 暂不原生支持 vless/hysteria/hysteria2/tuic/wireguard/ssr，会在文件里标注跳过，未计入代理组）。导入失败时请优先使用 Clash / sing-box 版本。',
     shadowrocket: '只包含节点（从标准字段重新生成 URI，再 Base64 打包）。Shadowrocket 支持全部协议类型；若个别节点导入失败，通常是 Reality / TUIC 字段不兼容，可切换到 Clash 配置或 Base64 版本对比。分流规则请在 App 内单独配置。',
     qx: '包含节点 + 完整分流规则。支持 ss / vmess / trojan / vless / socks5 / http(s)（hysteria/hysteria2/tuic/wireguard/ssr 会标注跳过）。tag 已自动把逗号/等号替换为下划线，避免 Quantumult X 解析失败。',
-    singbox: '包含节点 + 完整分流规则（JSON 格式，字段经 cleanObj 严格清洗，不出现 null/undefined）。支持 ss/vmess/vless/trojan/hysteria/hysteria2/tuic/wireguard/socks5/http，不支持 ssr。规则集使用 MetaCubeX/meta-rules-dat 官方 .srs 二进制源，并启用 download_detour 避免首次更新卡死。',
+    singbox: '包含节点 + 完整分流规则(JSON 格式,字段经 cleanObj 严格清洗,不出现 null/undefined)。支持 ss/vmess/vless/trojan/hysteria/hysteria2/tuic/wireguard/socks5/http,不支持 ssr。规则集使用 MetaCubeX/meta-rules-dat 官方 .srs 二进制源,并启用 download_detour 避免首次更新卡死。默认「自动选择」为 urltest 取最低延迟;开启右上角「⚖ 负载均衡」会切换为 load_balance(round-robin),连接被轮询分摊到各节点。',
     base64: '只包含节点，通用 Base64 订阅格式。V2rayN / NekoBox / V2rayNG / 小火箭 / Clash 客户端均可直接导入。每个节点的 URI 都是从标准字段重新生成的，不会保留原始分享链的"脏字段"。'
   };
   const NODE_ONLY_NOTES = {
@@ -1794,7 +1805,14 @@
   document.querySelectorAll('.modebtn').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
-      document.querySelectorAll('.modebtn').forEach(t => t.classList.remove('active'));
+      if (btn.dataset.lb) {
+        loadBalance = !loadBalance;
+        btn.classList.toggle('active', loadBalance);
+        btn.textContent = loadBalance ? '⚖ 负载均衡：开' : '⚖ 负载均衡：关';
+        updateOutput();
+        return;
+      }
+      document.querySelectorAll('.modebtn').forEach(t => { if (t.dataset.mode) t.classList.remove('active'); });
       btn.classList.add('active'); outputMode = btn.dataset.mode; updateOutput();
     });
   });

@@ -1,11 +1,56 @@
-修正很典型的错误——在第 1516 行那段说明文字里，藏了一个没转义的英文单引号：Now let's verify the syntax error is fully resolved and check for any other issues:语法本身现在没问题了，但既然改动这么大（从 900 行左右扩展到快 1800 行），我应该顺手跑一遍功能测试，确认新增的这些东西（节点/规则模式切换、内置的 AI 域名规则、去重统计等）本身逻辑没问题：好消息：**只有这一处问题**——那个未转义的单引号是唯一的语法错误，JS 这种脚本语言里，一个字符串没转义好，就会导致整个 `<script>` 直接停止解析，后面所有功能（不管你加了多少规则、加了多少功能）全部失效，这也是为什么"转换失败"看起来像是整体性的问题，其实根源就一个字符。
+# 多客户端订阅转换器
 
-我顺手也做了功能性验证，新增的东西都是好的：**具体问题**：第 1648 行，Clash 的说明文字里写了一句 `"The data couldn't be read..."`，这段文字本身是被单引号 `'...'` 包起来的字符串，但里面 `couldn't` 这个词自带一个英文撇号 `'`——JS 看到这个撇号，以为字符串到这里就结束了，后面所有内容全部被当成代码去解析，直接报语法错误，整个页面的功能就跟着全部崩掉。
+一个纯前端的节点订阅转换工具:粘贴节点链接或 Base64 订阅内容,**全部在浏览器本地完成解析与转换**(不上传任何数据),一键生成 6 种客户端格式。
 
-**验证过的部分**（确认只是这一个问题，没有连带其他 bug）：
-- 修复后重新做了完整语法检查，干净
-- 协议解析（ss/vmess/vless/trojan）跑了一遍，正常
-- 生成的 Clash YAML 过了 yaml 校验器，你新加的三段内联规则（`bestvirtualgoods.com` 强制代理、国内 AI 工具域名直连、Apple 认证域名直连防止侧载签名报错）确认都写进去了，没丢
-- 之前显示"代理组引用了不存在的节点"的两个警告，查了一下是误报——分别是引用内置的 `DIRECT` 策略和引用"自动选择"这个分组本身，这两种写法在 Clash 里都是合法的，不是断链
+支持协议:`ss` / `ssr` / `vmess` / `vless`(含 Reality)/ `trojan` / `hysteria` / `hysteria2` / `tuic` / `wireguard` / `socks5` / `http(s)`。
 
-新文件已经修好，直接用这个版本应该就能正常转换了。以后如果还在这份文件上继续加东西，**贴中文之外的英文引号/撇号（'s、n't 这种缩写）到字符串里时得留意转义**，这类 bug 很容易埋进去还不容易发现。
+## 功能
+
+- **输入**:一行一个节点链接、整段 Base64 订阅(从订阅 URL 复制的内容)、Clash YAML / sing-box JSON 完整配置(自动抽取 `proxies` / outbounds 中的节点)。
+- **输出格式**(tab 切换):
+  | 客户端 | 格式 | 说明 |
+  |---|---|---|
+  | Clash | YAML | 完整配置:节点 + dns 抗污染 + 37 组远程规则集 + 三段内联规则 |
+  | Surge | conf | [Proxy]/[Proxy Group]/[Rule] |
+  | Shadowrocket | txt | 仅节点(Base64) |
+  | Quantumult X | conf | [server_local]/[policy]/[filter_local] |
+  | sing-box | JSON | 完整配置;远程规则集用 MetaCubeX .srs 二进制 |
+  | Base64 | txt | 通用节点订阅 |
+- **输出内容模式**:`节点 + 规则`(完整配置)或 `仅节点`(裸节点列表)。
+- **节点负载均衡开关**(右上角 ⚖,默认关):
+  - Clash/Mihomo:`load-balance` + `round-robin`
+  - sing-box:`load_balance` + `round-robin`
+  - Surge:`url-latency-basis`
+  - 适合聚合了大量节点做多线程下载时摊开连接;默认关闭以保护登录态/Apple 认证(详见 [RULES.md](RULES.md) 第 5 节)。
+- **去重统计、诊断面板**:解析失败的行会标注行号/原因,节点卡片显示类型、SNI/流特征。
+
+## 分流规则设计(详见 [RULES.md](RULES.md))
+
+生成配置内置**三段内联规则**,优先级高于 `GEOIP,CN` / `MATCH` 兜底,不依赖远程规则集即可生效:
+
+1. **FORCE_PROXY_DOMAINS** —— 强制走代理的域名(当前为空,保留)。
+2. **国内 AI 工具/模型 API 直连** —— `traework.cn`、`trae.cn`、`workbuddy.cn`、`bestvirtualgoods.com`、`volces.com`、`deepseek.com`、`dashscope.aliyuncs.com`、`bigmodel.cn`、`moonshot.cn`、`siliconflow.cn` 等强制 DIRECT,解决 Trae / WorkBuddy 添加自定义模型「一直转圈 / Empty response / errCode -1」。
+3. **Apple 认证域名直连** —— `apple.com`、`icloud.com`、`mzstatic.com`、`apple-dns.net` 强制 DIRECT,防止 AltServer/Sideloadly 侧载签名被代理干扰、iOS 证书「信任闪退」。
+
+配套 **DNS 抗污染段**:Quad9 DoH/DoT 走 DIRECT 拿真 IP,`fake-ip` 模式 + `fake-ip-filter` 放行 Apple/AI 域名,`fallback-filter` 处理境外域名解析。
+
+规则输出顺序:`FORCE_PROXY` → 37 组 RULE-SET → INLINE_DIRECT → `GEOIP,CN,DIRECT` → `MATCH,PROXY`。
+
+## 使用
+
+1. `git clone https://github.com/wuzhuohua168/node-conversion-tool.git`
+2. 直接用浏览器打开 `index.html`(无需安装依赖、无需服务器)。也可以 `python3 -m http.server` 或任意静态托管。
+
+## 本地运行 / 修改
+
+- 单文件应用,所有逻辑在 `index.html` 的 `<script>` 内。
+- 改完自检:浏览器打开页面 → 填示例 → 解析 → 切换格式/负载均衡 → 复制到目标客户端验证。
+- **注意**:JS 字符串里如果出现英文撇号(如 `couldn't`、`it's`),在单引号字符串内必须转义(`\'`),否则整个 `<script>` 解析失败、页面白屏。
+
+## 隐私
+
+所有解析与转换均发生在浏览器本地,订阅内容不会发送到任何服务器。唯一的例外:生成的完整配置会引用远程规则集 URL(blackmatrix7 / MetaCubeX),由客户端在导入配置后自行拉取规则更新。
+
+## License
+
+MIT(如未指定,请以仓库实际 LICENSE 为准)。

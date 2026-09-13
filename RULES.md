@@ -53,7 +53,29 @@ Empty response / errCode -1」——多为到国内服务器的请求被误代�
   `+.traework.cn`、`+.trae.cn`、`+.workbuddy.cn` —— 这些域名用真实 IP，直接修复 OCSP 劫持导致的证书信任闪退。
 - 注意：`fallback` 走代理，若 PROXY 组没选/断开，国外域名会解析失败（国内不受影响）。
 
-## 规则输出顺序（自上而下，先匹配先生效）
+## 5. 节点负载均衡开关(2026-09-13 新增)
+
+UI 右上角「⚖ 负载均衡」按钮,默认**关闭**。开启后,「自动选择」策略组
+从 `url-test`(取最低延迟节点)切换为负载均衡轮询:
+
+| 客户端 | 关闭(默认) | 开启 |
+|---|---|---|
+| Clash / Mihomo | `url-test` + gstatic 204 + 300s | `load-balance` + `strategy: round-robin` |
+| sing-box | `urltest` | `load_balance` + `strategy: round-robin` |
+| Surge | `PROXY = select`(手动) | `PROXY = url-latency-basis`(延迟轮询) |
+| Quantumult X | `static=PROXY` | 不支持,保持不变 |
+
+**适用场景**:聚合了大量节点(多家机场/自建)做多线程下载、跑测速时,
+轮询能摊开并发连接、提升总带宽与容错。
+
+**注意事项**(为什么默认关闭):
+- 轮询会频繁更换出口 IP,可能破坏需要保持会话/相同出口的登录态、
+  Cloudflare 人机验证、流媒体区域锁。
+- 你的内联规则(RULES.md 1-4)设计目标是「AI/Apple 直连、其余走 PROXY」,
+  load-balance 只影响 PROXY 组内部选点,不影响直连白名单。
+- 若单个节点延迟远高于其他节点,轮询会拖慢整体体验;此时建议仍用 url-test。
+
+## 规则输出顺序(自上而下,先匹配先生效)
 
 ```
 1. FORCE_PROXY_DOMAINS      → PROXY   （模型中转，必须代理）
