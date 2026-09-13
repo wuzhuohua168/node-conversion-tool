@@ -8,15 +8,16 @@
 
 | 域名 | 原因 |
 |---|---|
-| `bestvirtualgoods.com` | WorkBuddy 的模型经本机 `lb_proxy`（127.0.0.1:8787）转发到这里的中转 API，该站点架在 Cloudflare 后。若被 GEOIP 误判为国内直连，模型调用整体失败；强制 PROXY 保证任何规则顺序下都能通。 |
+| (无) | **2026-09-13 起清空**。原 `bestvirtualgoods.com` 实测:大陆可直连 Cloudflare 边缘(TCP 通,526 属边缘 TLS/源站校验问题),走 Clash 代理(7890/7897)反而连接直接失败(000),当前节点链到该 Cloudflare 站不通。故该域已移入下方直连白名单,避免自定义模型「一直转圈 / Empty response」。此清单保留,用于将来确有「必须走代理才通」的域名。 |
 
 ## 2. DOMESTIC_AI_DIRECT_DOMAINS —— 国内 AI 工具强制直连
 
 | 域名 | 归属 |
 |---|---|
-| `traework.cn` / `trae.cn` | 字节 TRAE（含 SOLO/Work 桌面端，请求经其国内后端转发） |
+| `traework.cn` / `trae.cn` | 字节 TRAE(含 SOLO/Work 桌面端,请求经其国内后端转发) |
 | `workbuddy.cn` | WorkBuddy 云服务 |
-| `volces.com` / `volcengine.com` | 火山引擎方舟（豆包模型） |
+| `bestvirtualgoods.com` | WorkBuddy 模型上游中转 API(Cloudflare 后)。**2026-09-13 实测直连可达、代理 000,由 FORCE_PROXY 改为 DIRECT** |
+| `volces.com` / `volcengine.com` | 火山引擎方舟(豆包模型) |
 | `deepseek.com` | DeepSeek 官方 API |
 | `dashscope.aliyuncs.com` | 阿里云通义 |
 | `bigmodel.cn` | 智谱 GLM |
