@@ -8,9 +8,18 @@
 
 | 域名 | 原因 |
 |---|---|
-| (无) | **2026-09-13 起清空**。原 `bestvirtualgoods.com` 实测:大陆可直连 Cloudflare 边缘(TCP 通,526 属边缘 TLS/源站校验问题),走 Clash 代理(7890/7897)反而连接直接失败(000),当前节点链到该 Cloudflare 站不通。故该域已移入下方直连白名单,避免自定义模型「一直转圈 / Empty response」。此清单保留,用于将来确有「必须走代理才通」的域名。 |
+| `workbuddy.ai` | **2026-09-15 新增**。WorkBuddy 国际版部署在海外，国内直连往往打不开或卡死（TLS 握手超时），必须走代理(PROXY)才能稳定访问。加入此清单后，生成的 Clash/Surge/QX/sing-box 配置会在 `GEOIP,CN` / `MATCH` 兜底之前就把 `workbuddy.ai` 及其子域路由到代理。**注意区分**：`workbuddy.cn`(国内版)仍在下方「国内 AI 工具直连」清单走 DIRECT，两者互不冲突——一个国内直连、一个海外代理。 |
+| (无) | 原 `bestvirtualgoods.com` 实测:大陆可直连 Cloudflare 边缘(TCP 通,526 属边缘 TLS/源站校验问题),走 Clash 代理(7890/7897)反而连接直接失败(000),当前节点链到该 Cloudflare 站不通。故该域已移入下方直连白名单,避免自定义模型「一直转圈 / Empty response」。此清单保留,用于将来确有「必须走代理才通」的域名。 |
 
-## 2. DOMESTIC_AI_DIRECT_DOMAINS —— 国内 AI 工具强制直连
+## 2. FORCE_PROXY_DOMAINS — DNS 说明
+
+`workbuddy.ai`（国际版）**不需要**加入 `fake-ip-filter`。
+
+原因：该域名走代理（PROXY），DNS 也由代理出口解析，fake-ip 模式下由 Clash 自动返回 fake-ip（如 `198.18.x.x`），客户端拿着 fake-ip 通过代理通道访问海外节点，Clash 再在代理侧用真实 DNS 解析 —— 这条链路是完整可用的。而国内直连域名（如 `workbuddy.cn`、`traework.cn`）则必须用真实 IP 才能直接 TCP 到服务器，所以它们才需要加入 `fake-ip-filter`。
+
+如果你同时使用国内版和国际版，只需在客户端输入域名即可，规则会自动按 `DOMAIN-SUFFIX` 决定走 DIRECT 还是 PROXY。
+
+## 3. DOMESTIC_AI_DIRECT_DOMAINS —— 国内 AI 工具强制直连
 
 | 域名 | 归属 |
 |---|---|
@@ -28,7 +37,7 @@
 Empty response / errCode -1」——多为到国内服务器的请求被误代理，
 绕境外节点后延迟飙升甚至握手失败。
 
-## 3. APPLE_DIRECT_DOMAINS —— Apple 认证域名直连
+## 4. APPLE_DIRECT_DOMAINS —— Apple 认证域名直连
 
 | 域名 | 用途 |
 |---|---|
@@ -41,7 +50,7 @@ Empty response / errCode -1」——多为到国内服务器的请求被误代�
 - AltStore 刷新/安装报 `The data couldn't be read because it isn't in the correct format`（代理篡改 anisette 响应）。
 - iOS 免费签名证书「信任闪回」——运营商劫持 `ocsp.apple.com` 解析，配合下方 DNS 段用真实 IP 解析修复。
 
-## 4. DNS 抗污染段（配合上述白名单生效）
+## 5. DNS 抗污染段（配合上述白名单生效）
 
 本网络实测：Cloudflare / Google 的 DoH 被阻断，Quad9（9.9.9.9）是唯一干净解析源。
 生成的 `dns:` 段要点：
@@ -53,7 +62,7 @@ Empty response / errCode -1」——多为到国内服务器的请求被误代�
   `+.traework.cn`、`+.trae.cn`、`+.workbuddy.cn` —— 这些域名用真实 IP，直接修复 OCSP 劫持导致的证书信任闪退。
 - 注意：`fallback` 走代理，若 PROXY 组没选/断开，国外域名会解析失败（国内不受影响）。
 
-## 5. 节点负载均衡开关(2026-09-13 新增)
+## 6. 节点负载均衡开关(2026-09-13 新增)
 
 UI 右上角「⚖ 负载均衡」按钮,默认**关闭**。开启后,「自动选择」策略组
 从 `url-test`(取最低延迟节点)切换为负载均衡轮询:
@@ -78,9 +87,9 @@ UI 右上角「⚖ 负载均衡」按钮,默认**关闭**。开启后,「自动�
 ## 规则输出顺序(自上而下,先匹配先生效)
 
 ```
-1. FORCE_PROXY_DOMAINS      → PROXY   （模型中转，必须代理）
+1. FORCE_PROXY_DOMAINS      → PROXY   （workbuddy.ai 国际版，海外部署，必须代理）
 2. RULE-SET × 37            → 远程规则集
-3. INLINE_DIRECT_DOMAINS    → DIRECT  （Apple + 国内 AI 域名）
+3. INLINE_DIRECT_DOMAINS    → DIRECT  （Apple + 国内 AI 域名，含 workbuddy.cn 国内版）
 4. GEOIP,CN,DIRECT
 5. MATCH,PROXY
 ```

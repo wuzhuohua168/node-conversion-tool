@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="zh-CN" data-page-node-id="GmGhFCSMANOiRI7whiVisV">
+<head data-page-node-id="S9Z2kBPuINv94KYcpBvxZE">
+<meta charset="UTF-8" data-page-node-id="ZQuUkcq4B4qmtYCCGi6osM">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="7o0eJ3LYjL2TuAxGzVrUoG">
 <title>多客户端订阅转换器</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;700;800&display=swap');
@@ -65,71 +65,71 @@
   footer b{color:var(--text);}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <div class="mark">MULTI<br>SUB</div>
-      <div>
-        <h1>多客户端订阅转换器</h1>
-        <p class="sub">粘贴订阅内容 → 一次生成 Clash / Surge / Shadowrocket / Quantumult X / sing-box / Base64 六种格式</p>
+<body data-page-node-id="Gqu2N27qDkZui5Ce3p72JL">
+<div class="wrap" data-page-node-id="2WjwIZG4uiISvEmgC0VQQn">
+  <header data-page-node-id="mXdL9dh4aoK2GQQfo6XLt4">
+    <div class="brand" data-page-node-id="S2ubTOHkK0honiRJMRCkIs">
+      <div class="mark" data-page-node-id="mrJQmvicfLyfQZt3Usk3Rp">MULTI<br data-page-node-id="1e4wrF5FTEKn5c9xdBGH0y">SUB</div>
+      <div data-page-node-id="jdfVvQFw6ijolFeR29Xyzn">
+        <h1 data-page-node-id="UqBNqeW0D26vDhkQ2AdPnv">多客户端订阅转换器</h1>
+        <p class="sub" data-page-node-id="k1LWRO4W8AjL09eiV9So0j">粘贴订阅内容 → 一次生成 Clash / Surge / Shadowrocket / Quantumult X / sing-box / Base64 六种格式</p>
       </div>
     </div>
   </header>
 
-  <div class="panel">
-    <h2><span class="n">1</span>粘贴你的订阅内容</h2>
+  <div class="panel" data-page-node-id="LR2o2ZOCNG7U8UTPEDhCCk">
+    <h2 data-page-node-id="BOjMmloApKKYjNpuXvQFMQ"><span class="n" data-page-node-id="j3DYq4Ht53DYF6WDRMJHOT">1</span>粘贴你的订阅内容</h2>
     <textarea id="input" placeholder="粘贴内容，支持：
 1) 一行一个节点链接（ss:// vmess:// vless:// trojan:// hysteria:// hysteria2:// tuic:// ssr:// wireguard:// socks5:// http(s)://）
 2) 整段 Base64（从订阅链接下载下来的原始内容）
 不要直接粘贴“订阅链接 URL”本身——浏览器脚本通常因跨域限制读不到内容，请先在浏览器打开链接把返回内容复制出来再粘贴。"></textarea>
-    <div class="row">
-      <button class="primary" id="parseBtn">解析节点</button>
-      <button class="ghost" id="clearBtn">清空</button>
-      <button class="ghost" id="sampleBtn">填入示例</button>
+    <div class="row" data-page-node-id="kjvLwNP5tDbA2gVIDhKBQq">
+      <button class="primary" id="parseBtn" data-page-node-id="PuaFvfXdYGPTFHvbDBg5tr">解析节点</button>
+      <button class="ghost" id="clearBtn" data-page-node-id="EY3gyIIY4GYXioivCeYoso">清空</button>
+      <button class="ghost" id="sampleBtn" data-page-node-id="XRFPcJTsar38x328M5COqs">填入示例</button>
     </div>
   </div>
 
-  <div class="panel" id="statsPanel" style="display:none;">
-    <h2><span class="n">2</span>解析结果</h2>
-    <div class="stats">
-      <div class="stat"><div class="v" id="statTotal">0</div><div class="l">总行数</div></div>
-      <div class="stat ok"><div class="v" id="statOk">0</div><div class="l">成功解析</div></div>
-      <div class="stat err"><div class="v" id="statErr">0</div><div class="l">解析失败</div></div>
-      <div class="stat"><div class="v" id="statDedup">0</div><div class="l">去重后保留</div></div>
+  <div class="panel" id="statsPanel" style="display:none;" data-page-node-id="DTbkLZbbrZlacxEgKPaXNY">
+    <h2 data-page-node-id="TCRmwosxgKFQmUpvhWnCaE"><span class="n" data-page-node-id="nt0sVo4chGzZLZBdOsGIBX">2</span>解析结果</h2>
+    <div class="stats" data-page-node-id="eYGeJpvb0Ycf1boED1Rd1E">
+      <div class="stat" data-page-node-id="jWbwzwbIAEJWkJmpBNiwgF"><div class="v" id="statTotal" data-page-node-id="lRlwWHcf1elF6F4oqOI5CE">0</div><div class="l" data-page-node-id="yFvNMwQH8BqAtfuYASwCfJ">总行数</div></div>
+      <div class="stat ok" data-page-node-id="kWDm3fCalP7e5C5hlxbH8U"><div class="v" id="statOk" data-page-node-id="kIJA7ah6lj2hJ3d2F12BnE">0</div><div class="l" data-page-node-id="nVVHHWC0yIqbcYYzDf5zlU">成功解析</div></div>
+      <div class="stat err" data-page-node-id="jdexYCWBIOvSoj2Ium67FD"><div class="v" id="statErr" data-page-node-id="vV2l43ZQ8fXt4BkZj2OpgV">0</div><div class="l" data-page-node-id="832bR7UcPLqQQONc6ZUjOT">解析失败</div></div>
+      <div class="stat" data-page-node-id="8VCLBtAlQ6SwpI9UnR7GH5"><div class="v" id="statDedup" data-page-node-id="wcv9fN1KlMuItPlaYFJZHt">0</div><div class="l" data-page-node-id="aNgVGzlTJ7MgQOYZlNQAoU">去重后保留</div></div>
     </div>
-    <div class="clientnote" id="diagnoseBox" style="display:none;margin-top:12px;"></div>
-    <div class="errlist" id="errList"></div>
-    <div class="nodelist" id="nodeList"></div>
+    <div class="clientnote" id="diagnoseBox" style="display:none;margin-top:12px;" data-page-node-id="AAaSQ8qLeKEc4eU6yNiHUt"></div>
+    <div class="errlist" id="errList" data-page-node-id="mDq49LuVTmflyd6JlGvkmq"></div>
+    <div class="nodelist" id="nodeList" data-page-node-id="V13vzReZXJTRjkHECZJgpW"></div>
   </div>
 
-  <div class="panel" id="outputPanel" style="display:none;">
-    <h2><span class="n">3</span>选择目标客户端并下载</h2>
-    <div class="tabs">
-      <div class="tab active" data-fmt="clash">Clash</div>
-      <div class="tab" data-fmt="surge">Surge</div>
-      <div class="tab" data-fmt="shadowrocket">Shadowrocket</div>
-      <div class="tab" data-fmt="qx">Quantumult X</div>
-      <div class="tab" data-fmt="singbox">sing-box</div>
-      <div class="tab" data-fmt="base64">Base64</div>
+  <div class="panel" id="outputPanel" style="display:none;" data-page-node-id="oxKpVdQoAFf8l0jPjbMOsV">
+    <h2 data-page-node-id="AidCJbpk39vqeVrQpB2zsi"><span class="n" data-page-node-id="fWSWqLVo7fBwEOXlY63Lgl">3</span>选择目标客户端并下载</h2>
+    <div class="tabs" data-page-node-id="6E5UHUndD2lXPnYgPGxWE0">
+      <div class="tab active" data-fmt="clash" data-page-node-id="qRxoKvWAQg8w4kB1DOeYbn">Clash</div>
+      <div class="tab" data-fmt="surge" data-page-node-id="6oMWdMldX6F8pa1BKCAxRK">Surge</div>
+      <div class="tab" data-fmt="shadowrocket" data-page-node-id="cnppkMrHIscwmaLZ8Y50iW">Shadowrocket</div>
+      <div class="tab" data-fmt="qx" data-page-node-id="GHADQBKSNsPbjdUQD976ck">Quantumult X</div>
+      <div class="tab" data-fmt="singbox" data-page-node-id="V6wMiPLQ1T4xZiPCjz8HHK">sing-box</div>
+      <div class="tab" data-fmt="base64" data-page-node-id="pCYQDmS6vgYhMo4vM2F3OJ">Base64</div>
     </div>
-    <div class="modebar" aria-label="输出内容">
-      <button class="modebtn active" type="button" data-mode="rules">节点 + 规则</button>
-      <button class="modebtn" type="button" data-mode="nodes">仅节点</button>
-      <button class="modebtn lb" type="button" data-lb="on" title="开启后把并发连接分摊到多个节点（轮询），适合聚合了大量节点做多线程下载；会暴露真实源 IP，可能破坏登录态/Apple 认证">⚖ 负载均衡：关</button>
+    <div class="modebar" aria-label="输出内容" data-page-node-id="7HAhhED0vwrJ4ZZOS6shrO">
+      <button class="modebtn active" type="button" data-mode="rules" data-page-node-id="HhuiOWoewp01BPF5v6dGpv">节点 + 规则</button>
+      <button class="modebtn" type="button" data-mode="nodes" data-page-node-id="NskkmB1vxKVhYuNPtdhnVp">仅节点</button>
+      <button class="modebtn lb" type="button" data-lb="on" title="开启后把并发连接分摊到多个节点（轮询），适合聚合了大量节点做多线程下载；会暴露真实源 IP，可能破坏登录态/Apple 认证" data-page-node-id="Pgp6uC0GqupooBqPv4YCGT">⚖ 负载均衡：关</button>
     </div>
-    <div class="clientnote" id="clientNote"></div>
+    <div class="clientnote" id="clientNote" data-page-node-id="0Mx5qelgi1Uq3XWYGsk2Rn"></div>
     <textarea id="output" readonly style="min-height:300px;"></textarea>
-    <div class="row">
-      <button class="primary" id="copyBtn">复制</button>
-      <button class="ghost" id="downloadBtn">下载文件</button>
-      <span id="copiedFlash" style="display:none; color:var(--accent); font-family:var(--mono); font-size:12px;">已复制 ✓</span>
+    <div class="row" data-page-node-id="VO3xodpwQvM4DjajUpw62Z">
+      <button class="primary" id="copyBtn" data-page-node-id="zDWnS4JFEhBcmTM0nxm2Ui">复制</button>
+      <button class="ghost" id="downloadBtn" data-page-node-id="T0oYoMh6900OjR5p1vjy7T">下载文件</button>
+      <span id="copiedFlash" style="display:none; color:var(--accent); font-family:var(--mono); font-size:12px;" data-page-node-id="xZQsBB2df4IlLszfsKVniB">已复制 ✓</span>
     </div>
   </div>
 
-  <footer>
-    所有解析和转换都在你的浏览器本地完成，订阅内容不会发送到任何服务器。<br>
-    带规则的客户端（Clash / Surge / Quantumult X / sing-box）都内置了同一套分流逻辑：国内服务直连、国外主流服务走代理、大陆 IP 兜底直连；<b>Shadowrocket 和 Base64 只输出节点，不带规则</b>——Shadowrocket 的分流规则通常在客户端内单独配置或使用其自带的规则功能，这里只负责把节点转换对。
+  <footer data-page-node-id="gbasWi1rBn7iFTnAhvPDBD">
+    所有解析和转换都在你的浏览器本地完成，订阅内容不会发送到任何服务器。<br data-page-node-id="tan2AJmlZpezNDu18mQwma">
+    带规则的客户端（Clash / Surge / Quantumult X / sing-box）都内置了同一套分流逻辑：国内服务直连、国外主流服务走代理、大陆 IP 兜底直连；<b data-page-node-id="SXEd4ZAVQd5r7nWPQeOJ5l">Shadowrocket 和 Base64 只输出节点，不带规则</b>——Shadowrocket 的分流规则通常在客户端内单独配置或使用其自带的规则功能，这里只负责把节点转换对。
   </footer>
 </div>
 
@@ -914,6 +914,8 @@
   //  2) 国内 AI 工具域名：traework.cn / workbuddy.cn 是国内服务，客户端到它们的请求被代理
   //     走境外节点会延迟飙升甚至卡死（典型：自定义模型一直转圈 / Empty response / errCode -1）。
   //     连同这些产品可能调用的国内模型 API 域名一起直连，避免被误代理。
+  //  3) 国际版域名：workbuddy.ai 是 WorkBuddy 国际版（部署在海外），其请求走直连往往打不开或卡死，
+  //     必须走代理才能稳定访问（详见下方 FORCE_PROXY_DOMAINS）。国际版与国内版账号/积分/模型池完全隔离。
   const APPLE_DIRECT_DOMAINS = ["apple.com", "icloud.com", "mzstatic.com", "apple-dns.net"];
   // 用父域名后缀写法:DOMAIN-SUFFIX 会自动覆盖该域名的所有子域名。
   const DOMESTIC_AI_DIRECT_DOMAINS = [
@@ -927,7 +929,12 @@
   // Cloudflare 边缘 TLS/源站校验问题,与代理无关);而经代理(Clash 7890/7897)连接直接 000 失败,说明
   // 当前节点链到该 Cloudflare 站不通。此前设计强制 PROXY,反而导致自定义模型「一直转圈」。
   // 改为放进直连白名单(见 INLINE_DIRECT_DOMAINS 与下方注释),让各格式规则把该域名走 DIRECT。
-  const FORCE_PROXY_DOMAINS = [];
+  // 强制走代理的域名：当前填 workbuddy.ai（WorkBuddy 国际版，海外部署，直连不稳/打不开），
+  // 这些域名必须在 GEOIP/MATCH 兜底之前就路由到 PROXY，避免被误判为国内直连。
+  // 注:workbuddy.cn(国内版)仍走上面 INLINE_DIRECT_DOMAINS 的 DIRECT;两者互不冲突。
+  const FORCE_PROXY_DOMAINS = [
+    "workbuddy.ai"
+  ];
 
   // 所有客户端格式 rules 段统一注入这个合并数组（DIRECT 白名单）
   const INLINE_DIRECT_DOMAINS = [...APPLE_DIRECT_DOMAINS, ...DOMESTIC_AI_DIRECT_DOMAINS];
@@ -1089,6 +1096,7 @@
     //  fallback 走 Quad9 DoH/DoT #PROXY —— 国外域名拿到境外出口解析，配合 fallback-filter(geoip CN + 常见被污染域)触发。
     //  fake-ip-filter 放行 *.apple.com / ocsp.apple.com / 国内 AI 域名 —— 用真实 IP，直接解决 9/11 记录的
     //    "运营商 DNS 劫持 ocsp.apple.com → iOS 证书信任闪退"（Mac 侧 AltStore anisette 同受益）。
+    //    注：workbuddy.ai（国际版）不需要加入 fake-ip-filter，因为它走代理域名，DNS 由代理出口解析即可。
     const dnsLines = [
       'dns:',
       '  enable: true',
@@ -1659,7 +1667,7 @@
 
   // ---------- UI wiring ----------
   const CLIENT_NOTES = {
-    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。并内置三段内联规则（位于 GEOIP/MATCH 之前）：① bestvirtualgoods.com 作为国内 AI 直连白名单（2026-09-13 实测直连可达 Cloudflare 边缘，走代理反而 000 失败；详见 RULES.md）；② 国内 AI 工具域名 traework.cn/workbuddy.cn 及常用国内模型 API（火山/阿里/DeepSeek/智谱/月之暗面/硅基流动等）DIRECT；③ Apple 认证域名 apple.com/icloud.com/mzstatic.com DIRECT，防止 AltServer/Sideloadly 侧载签名被代理干扰报 “The data couldn\'t be read...” 或 iOS 证书信任闪退。支持全部协议类型，但前提是 Clash.Meta / Mihomo 内核（Clash Verge Rev、Mihomo Party、FlClash、ClashX Meta 等）。默认「自动选择」为 url-test 取最低延迟节点；点右上角「⚖ 负载均衡」可切换为 load-balance 轮询（适合聚合大量节点做多线程下载，但会暴露真实源 IP，可能破坏登录态/Apple 认证）。普通 ClashX（原版内核）不支持 TUIC / Hysteria2 / VLESS / WireGuard，请用 Clash Verge Rev 等 Meta 版。',
+    clash: '包含节点 + 完整分流规则（37 组规则集，国内直连/国外代理/GEOIP 兜底）。并内置三段内联规则（位于 GEOIP/MATCH 之前）：① workbuddy.ai（WorkBuddy 国际版，海外部署）强制 PROXY，避免直连打不开/卡死（详见 RULES.md）；② bestvirtualgoods.com 作为国内 AI 直连白名单（2026-09-13 实测直连可达 Cloudflare 边缘，走代理反而 000 失败；详见 RULES.md），国内 AI 工具域名 traework.cn/workbuddy.cn 及常用国内模型 API（火山/阿里/DeepSeek/智谱/月之暗面/硅基流动等）DIRECT；③ Apple 认证域名 apple.com/icloud.com/mzstatic.com DIRECT，防止 AltServer/Sideloadly 侧载签名被代理干扰报 “The data couldn\'t be read...” 或 iOS 证书信任闪退。支持全部协议类型，但前提是 Clash.Meta / Mihomo 内核（Clash Verge Rev、Mihomo Party、FlClash、ClashX Meta 等）。默认「自动选择」为 url-test 取最低延迟节点；点右上角「⚖ 负载均衡」可切换为 load-balance 轮询（适合聚合大量节点做多线程下载，但会暴露真实源 IP，可能破坏登录态/Apple 认证）。普通 ClashX（原版内核）不支持 TUIC / Hysteria2 / VLESS / WireGuard，请用 Clash Verge Rev 等 Meta 版。',
     surge: '包含节点 + 完整分流规则。仅支持 ss / vmess / trojan / socks5 / http(s)（Surge 暂不原生支持 vless/hysteria/hysteria2/tuic/wireguard/ssr，会在文件里标注跳过，未计入代理组）。导入失败时请优先使用 Clash / sing-box 版本。',
     shadowrocket: '只包含节点（从标准字段重新生成 URI，再 Base64 打包）。Shadowrocket 支持全部协议类型；若个别节点导入失败，通常是 Reality / TUIC 字段不兼容，可切换到 Clash 配置或 Base64 版本对比。分流规则请在 App 内单独配置。',
     qx: '包含节点 + 完整分流规则。支持 ss / vmess / trojan / vless / socks5 / http(s)（hysteria/hysteria2/tuic/wireguard/ssr 会标注跳过）。tag 已自动把逗号/等号替换为下划线，避免 Quantumult X 解析失败。',
