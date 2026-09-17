@@ -932,12 +932,44 @@
   // 强制走代理的域名：当前填 workbuddy.ai（WorkBuddy 国际版，海外部署，直连不稳/打不开），
   // 这些域名必须在 GEOIP/MATCH 兜底之前就路由到 PROXY，避免被误判为国内直连。
   // 注:workbuddy.cn(国内版)仍走上面 INLINE_DIRECT_DOMAINS 的 DIRECT;两者互不冲突。
+  // 银行/金融域名:国内网银/银联/云闪付对代理出口 IP 敏感,检测到境外/机房 IP 会触发风控,要求关闭 VPN。
+  // 全部强制 DIRECT,避免被 FINAL,PROXY 兜底代理出去。2026-09-17 新增。
+  const BANKS_DIRECT_DOMAINS = [
+    "icbc.com.cn"
+    "icbc.com"
+    "ccb.com"
+    "abchina.com.cn"
+    "boc.cn"
+    "boc.com"
+    "psbc.com"
+    "bankcomm.com"
+    "cmbchina.com"
+    "bank.ecitic.com"
+    "citicbank.com.cn"
+    "cebbank.com"
+    "cmbc.com.cn"
+    "cib.com.cn"
+    "spdb.com.cn"
+    "pingan.com"
+    "hxb.com.cn"
+    "cgbchina.com.cn"
+    "czbank.com"
+    "cbhb.com.cn"
+    "evergrowingbank.com.cn"
+    "bankofbeijing.com.cn"
+    "bob.com.cn"
+    "bos.com.cn"
+    "bankofshanghai.com"
+    "unionpay.com"
+    "chinaunionpay.com"
+    "95516.com"
+  ];
   const FORCE_PROXY_DOMAINS = [
     "workbuddy.ai"
   ];
 
   // 所有客户端格式 rules 段统一注入这个合并数组（DIRECT 白名单）
-  const INLINE_DIRECT_DOMAINS = [...APPLE_DIRECT_DOMAINS, ...DOMESTIC_AI_DIRECT_DOMAINS];
+  const INLINE_DIRECT_DOMAINS = [...APPLE_DIRECT_DOMAINS, ...DOMESTIC_AI_DIRECT_DOMAINS, ...BANKS_DIRECT_DOMAINS];
 
   const SINGBOX_RULES = [
     ["youtube","proxy"],["netflix","proxy"],["disney","proxy"],["hbo","proxy"],["spotify","proxy"],["telegram","proxy"],
