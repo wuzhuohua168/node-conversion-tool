@@ -37,7 +37,21 @@
 Empty response / errCode -1」——多为到国内服务器的请求被误代理，
 绕境外节点后延迟飙升甚至握手失败。
 
-## 4. APPLE_DIRECT_DOMAINS —— Apple 认证域名直连
+
+## 2.1 BANKS_DIRECT_DOMAINS —— 国内银行/金融强制直连
+
+国内网银 / 银联 / 云闪付对代理出口 IP 极为敏感,检测到境外/机房 IP 会触发风控,要求关闭 VPN 才能交易。此段把主流银行域名全部强制 `DIRECT`,即使节点在运行也不受影响。
+
+| 类目 | 域名 |
+|---|---|
+| 国有大行 | `icbc.com.cn` / `ccb.com` / `abchina.com.cn` / `boc.cn` / `psbc.com` / `bankcomm.com` |
+| 股份制 | `cmbchina.com` / `citicbank.com.cn` / `cebbank.com` / `cmbc.com.cn` / `cib.com.cn` / `spdb.com.cn` / `pingan.com` / `hxb.com.cn` / `cgbchina.com.cn` / `czbank.com` / `cbhb.com.cn` / `evergrowingbank.com.cn` |
+| 城商行 | `bankofbeijing.com.cn` / `bob.com.cn` / `bos.com.cn` / `bankofshanghai.com` |
+| 银联/云闪付 | `unionpay.com` / `chinaunionpay.com` / `95516.com` |
+
+**解决的典型问题**：国内银行卡 / 云闪付 App 检测到代理 IP 后自动封禁,需要手动关掉翻墙才能用。此段让银行请求始终直连。
+
+## 5. APPLE_DIRECT_DOMAINS —— Apple 认证域名直连
 
 | 域名 | 用途 |
 |---|---|
@@ -62,7 +76,7 @@ Empty response / errCode -1」——多为到国内服务器的请求被误代�
   `+.traework.cn`、`+.trae.cn`、`+.workbuddy.cn` —— 这些域名用真实 IP，直接修复 OCSP 劫持导致的证书信任闪退。
 - 注意：`fallback` 走代理，若 PROXY 组没选/断开，国外域名会解析失败（国内不受影响）。
 
-## 6. 节点负载均衡开关(2026-09-13 新增)
+## 7. 节点负载均衡开关(2026-09-13 新增)
 
 UI 右上角「⚖ 负载均衡」按钮,默认**关闭**。开启后,「自动选择」策略组
 从 `url-test`(取最低延迟节点)切换为负载均衡轮询:
@@ -89,7 +103,7 @@ UI 右上角「⚖ 负载均衡」按钮,默认**关闭**。开启后,「自动�
 ```
 1. FORCE_PROXY_DOMAINS      → PROXY   （workbuddy.ai 国际版，海外部署，必须代理）
 2. RULE-SET × 37            → 远程规则集
-3. INLINE_DIRECT_DOMAINS    → DIRECT  （Apple + 国内 AI 域名，含 workbuddy.cn 国内版）
+3. INLINE_DIRECT_DOMAINS    → DIRECT  （Apple + 国内 AI + 银行/金融域名，含 workbuddy.cn 国内版）
 4. GEOIP,CN,DIRECT
 5. MATCH,PROXY
 ```
